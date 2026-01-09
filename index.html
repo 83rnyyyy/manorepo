@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <title>title</title>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden; /* prevent scrolling */
+        }
+
+        #game_screen {
+            display: block;
+            width: 100vw;
+            height: 100vh; /* full viewport */
+        }
+    </style>
+</head>
+<body>
+    <canvas id="game_screen"></canvas>
+    <script type="importmap">
+    {
+    "imports": {
+        "three": "/node_modules/three/build/three.module.js",
+        "three/examples/jsm/": "/node_modules/three/examples/jsm/"
+    }
+    }</script>
+    <script src="dist/index.js" type="module"></script>
+    
+</body>
+</html>
