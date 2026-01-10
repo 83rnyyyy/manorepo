@@ -14,6 +14,12 @@ export class Plates extends Station {
     onBegin(_ctx) {
         // optional: start animation/sfx
     }
+    useAnimation(three) {
+        three.switchPlayerVariant("knife");
+        // if your PlayerAnimator caches actions, call something like:
+        // this.animator.bind(this.three.playerActions);
+        three.switchPlayerVariant("default");
+    }
     onComplete(ctx) {
         const p = new THREE.Vector3();
         ctx.player.getWorldPosition(p);

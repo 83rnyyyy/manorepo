@@ -22,8 +22,7 @@ export class Game {
     three;
     controller;
     player;
-    playerMixer;
-    stationManager = new StationManager();
+    stationManager;
     progressUI = new ProgressBar();
     clock = new THREE.Clock();
     bounds = { minX: 0, maxX: 0, minZ: 0, maxZ: 0 };
@@ -44,20 +43,16 @@ export class Game {
     async init() {
         const canvas = Canvas.canvas;
         this.three = new ThreeRenderer(canvas);
+        this.stationManager = new StationManager(this.three);
         this.controller = new Controller();
         this.controller.addButton("KeyE");
         this.controller.addButton("KeyP");
-        // 1) spawn player
         const playerObj = await this.three.spawnPlayer("/public/Panda.glb", new THREE.Vector3(0, 0, 0));
-        // 2) mixer + animator (created once)
-        this.playerMixer = this.three.playerMixer; // playerMixer is non-null after spawnPlayer
+        await this.three.addPlayerVariant("knife", "/public/Panda_Knife.glb");
         this.animator = new PlayerAnimator(this.three.playerActions);
-        // 3) load map
         this.mapObj = await this.three.loadGLB("/public/test6.glb");
-        // 4) stations must be after map exists
         this.createStations();
         this.createStationDebugHelpers();
-        // 5) collision + bounds
         this.world.clear();
         this.world.fromGraphNode(this.mapObj);
         this.bounds = this.computeBoundsFromMap(this.mapObj, 1.0);
@@ -65,12 +60,10 @@ export class Game {
         this.three.scene.add(this.boundsRect);
         this.boundsBox = this.createBoundsBoxLines(this.bounds, 0, 5);
         this.three.scene.add(this.boundsBox);
-        // 6) create Player using the real objects
         this.player = new Player(playerObj, this.controller, this.bounds, this.world, this.animator);
         this.clock.start();
         this.platePrefab = await this.loadPrefab("/public/Environment/glTF/Environment_Plate.gltf");
         const plates = this.stationManager.getByType(Plates);
-        // test: spawn one plate in world
         for (let i = 0; i < 3; i++) {
             const clonedPlate = this.platePrefab.clone();
             this.testPlates.push(new PlateItem(this.three, clonedPlate, plates.plateLocations[i][0], plates.plateLocations[i][1], plates.plateLocations[i][2]));
@@ -79,10 +72,9 @@ export class Game {
     }
     update(dt) {
         this.player.update(dt);
-        this.playerMixer.update(dt);
+        this.three.playerMixer.update(dt);
         // stations
-        this.stationManager.update(dt, this.controller, this.player.object);
-        // debug: show where station boxes are every frame
+        this.stationManager.update(dt, this.controller, this.player, this.three);
         this.updateStationDebugHelpers();
         if (this.controller.getButtonState("KeyP")) {
             const world = new THREE.Vector3();
@@ -126,6 +118,7 @@ export class Game {
         const counterAnchor4 = this.makeAnchor(this.mapObj, "sinkAnchor1", new THREE.Vector3(17.02, 0.28, -2.69));
         const counterAnchor5 = this.makeAnchor(this.mapObj, "sinkAnchor1", new THREE.Vector3(20.23, 0.61, -3.27));
         const counterAnchor6 = this.makeAnchor(this.mapObj, "sinkAnchor1", new THREE.Vector3(14.03, 0.28, -11.89));
+        const counterAnchor7 = this.makeAnchor(this.mapObj, "sinkAnchor7", new THREE.Vector3(18.62, 0.20, -2.76));
         const sink = new Sink(sinkAnchor);
         sink.halfX = 0.6;
         sink.halfY = 1.0;
@@ -188,10 +181,12 @@ export class Game {
         const counter6 = new Counter(counterAnchor6);
         counter6.halfX = 0.6;
         counter6.halfY = 1;
-        counter6.halfZ = 0.6;
+        counter6.halfZ = 0.8;
         this.stationManager.add(counter6);
+        const counter7 = new Counter(counterAnchor7);
+        this.stationManager.add(counter7);
         // keep refs so we can draw/update helpers
-        this.stations = [sink, board, stove, fridge, trash, plates, counter1, counter2, counter3, counter4, counter5, counter6];
+        this.stations = [sink, board, stove, fridge, trash, plates, counter1, counter2, counter3, counter4, counter5, counter6], counter7;
     }
     createStationDebugHelpers() {
         // remove old if any

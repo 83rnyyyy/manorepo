@@ -11,6 +11,8 @@ export class Trash extends Station {
         console.log("Trash complete at:", p.x.toFixed(2), p.y.toFixed(2), p.z.toFixed(2));
         // TODO: delete item in player's hands
     }
+    useAnimation(three, player) {
+    }
     onBegin(_ctx) {
     }
 }

@@ -1,14 +1,20 @@
 // objects/stations/stationManager.ts
 import * as THREE from "three";
 export class StationManager {
+    three;
     stations = [];
     focused = null;
+    constructor(three) {
+        this.three = three;
+        this.three = three;
+    }
     add(station) {
         this.stations.push(station);
     }
-    update(dt, controller, player) {
+    update(dt, controller, player, three) {
+        const playerObj = player.object;
         const p = new THREE.Vector3();
-        player.getWorldPosition(p);
+        playerObj.getWorldPosition(p);
         // pick closest station that contains player
         let best = null;
         let bestDist = Infinity;
@@ -23,11 +29,11 @@ export class StationManager {
             }
         }
         if (this.focused && this.focused !== best)
-            this.focused.cancel();
+            this.focused.cancel(three, player);
         this.focused = best;
         if (this.focused) {
-            const ctx = { player };
-            this.focused.tick(dt, controller, p, ctx);
+            const ctx = { player: playerObj };
+            this.focused.tick(dt, controller, p, ctx, this.three, player);
         }
     }
     getFocused() {

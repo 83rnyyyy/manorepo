@@ -8,6 +8,8 @@ export class Stove extends Station {
     onBegin(_ctx) {
         // optional: start cooking animation/sfx
     }
+    useAnimation(three) {
+    }
     onComplete(ctx) {
         const p = new THREE.Vector3();
         ctx.player.getWorldPosition(p);

@@ -2,6 +2,7 @@
 import * as THREE from "three";
 import { Station} from "./station.js";
 import { StationContext } from "../types.js";
+import { ThreeRenderer } from "../../core/render.js";
 
 export class Stove extends Station {
   public prompt(): string {
@@ -10,6 +11,9 @@ export class Stove extends Station {
 
   protected onBegin(_ctx: StationContext) {
     // optional: start cooking animation/sfx
+  }
+  protected override useAnimation(three: ThreeRenderer): void {
+    
   }
 
   protected onComplete(ctx: StationContext): void {

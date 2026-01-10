@@ -2,6 +2,8 @@
 import * as THREE from "three";
 import { Station} from "./station.js";
 import { StationContext } from "../types.js";
+import { ThreeRenderer } from "../../core/render.js";
+import { Player } from "../player.js";
 
 export class Trash extends Station {
   public prompt(): string {
@@ -13,6 +15,10 @@ export class Trash extends Station {
     ctx.player.getWorldPosition(p);
     console.log("Trash complete at:", p.x.toFixed(2), p.y.toFixed(2), p.z.toFixed(2));
     // TODO: delete item in player's hands
+  }
+
+  protected override useAnimation(three: ThreeRenderer, player?: Player): void {
+    
   }
   protected override onBegin(_ctx: StationContext): void {
       

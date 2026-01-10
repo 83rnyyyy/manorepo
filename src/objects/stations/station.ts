@@ -2,6 +2,8 @@
 import * as THREE from "three";
 import { Controller } from "../../core/controller.js";
 import { StationContext } from "../types.js";
+import { ThreeRenderer } from "../../core/render.js";
+import { Player } from "../player.js";
 
 export abstract class Station {
   public readonly anchor: THREE.Object3D;
@@ -44,29 +46,35 @@ export abstract class Station {
     return THREE.MathUtils.clamp(this.progress / this.holdSeconds, 0, 1);
   }
 
-  public cancel() {
-    if (this.active) this.onCancel();
+  public cancel(three:ThreeRenderer, player:Player) {
+    if (this.active) this.onCancel(three,player);
     this.active = false;
     this.progress = 0;
   }
+
 
   public tick(
     dt: number,
     controller: Controller,
     playerWorldPos: THREE.Vector3,
-    ctx: StationContext
+    ctx: StationContext,
+    three: ThreeRenderer,
+    player: Player,
   ) {
+
     const inside = this.containsPoint(playerWorldPos);
     const holding = controller.getButtonState(this.interactKey);
 
     if (!inside || !holding) {
-      this.cancel();
+      
+      this.cancel(three,player);
       return;
     }
 
     if (!this.active) {
       this.active = true;
       this.onBegin(ctx);
+      this.useAnimation(three, player)
     }
 
     this.progress += dt;
@@ -74,13 +82,14 @@ export abstract class Station {
     if (this.progress >= this.holdSeconds) {
       this.progress = 0;
       this.active = false;
-      this.onComplete(ctx);
+      this.onComplete(ctx,three,player);
     }
   }
 
   public abstract prompt(): string;
 
   protected abstract onBegin(_ctx: StationContext): void
-  protected onCancel() {}
-  protected abstract onComplete(ctx: StationContext): void;
+  protected onCancel(three: ThreeRenderer, player:Player): void {}
+  protected abstract onComplete(ctx: StationContext, three:ThreeRenderer, player:Player): void;
+  protected abstract useAnimation(three:ThreeRenderer, player?: Player): void;
 }

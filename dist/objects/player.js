@@ -14,6 +14,8 @@ export class Player {
     modelYawOffset = 0; // try Math.PI, Math.PI/2, -Math.PI/2 if needed
     held = null;
     holdSocket = new THREE.Object3D();
+    actionName = null;
+    actionTimeLeft = 0;
     // optional smoothing
     snapTurn = false; // true = instant, false = smooth
     turnSpeed = 18; // rad/sec if snapTurn=false
@@ -35,6 +37,11 @@ export class Player {
         const start = p.clone().add(new THREE.Vector3(0, radius, 0));
         const end = p.clone().add(new THREE.Vector3(0, radius + height, 0));
         this.collider = new Capsule(start, end, radius);
+    }
+    startAction(name, durationSec) {
+        this.actionName = name;
+        this.actionTimeLeft = durationSec;
+        this.animator.set(name);
     }
     hasHeldItem() {
         return this.held !== null;
@@ -84,41 +91,25 @@ export class Player {
     face8Dir(ix, iz, dt) {
         if (ix === 0 && iz === 0)
             return;
-        // angle for world directions (same convention you used before)
         let yaw = Math.atan2(ix, iz) + this.modelYawOffset;
-        // snap to 8 directions (every 45 degrees)
         const step = Math.PI / 4;
         yaw = Math.round(yaw / step) * step;
-        if (this.snapTurn) {
-            this.object.rotation.y = yaw;
-            return;
-        }
-        // smooth turn (optional)
         const cur = this.object.rotation.y;
-        let delta = yaw - cur;
-        delta = ((delta + Math.PI) % (2 * Math.PI)) - Math.PI; // [-pi, pi]
-        this.object.rotation.y = cur + delta * Math.min(1, this.turnSpeed * dt);
+        // shortest signed angle difference in [-PI, PI]
+        const delta = Math.atan2(Math.sin(yaw - cur), Math.cos(yaw - cur));
+        const t = Math.min(1, this.turnSpeed * dt);
+        this.object.rotation.y = cur + delta * t;
     }
     update(dt) {
-        // WASD input
-        const ix = (this.controller.getButtonState("KeyD") ? 1 : 0) +
-            (this.controller.getButtonState("KeyA") ? -1 : 0);
-        const iz = (this.controller.getButtonState("KeyS") ? 1 : 0) +
-            (this.controller.getButtonState("KeyW") ? -1 : 0);
+        const ix = (this.controller.getButtonState("KeyD") ? 1 : 0) + (this.controller.getButtonState("KeyA") ? -1 : 0);
+        const iz = (this.controller.getButtonState("KeyS") ? 1 : 0) + (this.controller.getButtonState("KeyW") ? -1 : 0);
         this.face8Dir(ix, iz, dt);
         const moving = ix !== 0 || iz !== 0;
-        // animation state
-        if (!moving) {
-            if (this.hasItem)
-                this.animator.set("Idle_Holding");
-            else
-                this.animator.set("Idle");
-        }
-        else {
-            if (this.hasItem)
-                this.animator.set("Walk_Holding");
-            else
-                this.animator.set("Walk");
+        // tick action timer (does NOT return early)
+        if (this.actionName) {
+            this.actionTimeLeft -= dt;
+            if (this.actionTimeLeft <= 0)
+                this.actionName = null;
         }
         // desired movement this frame
         const move = new THREE.Vector3(ix, 0, iz);
@@ -147,6 +138,24 @@ export class Player {
             this.collider.translate(new THREE.Vector3(dx, 0, dz));
         this.object.position.copy(this.collider.start);
         this.object.position.y -= this.collider.radius;
+        if (!this.actionName) {
+            if (!moving) {
+                if (this.hasItem)
+                    this.animator.set("Idle_Holding");
+                else
+                    this.animator.set("Idle");
+            }
+            else {
+                if (this.hasItem)
+                    this.animator.set("Walk_Holding");
+                else
+                    this.animator.set("Walk");
+            }
+        }
+    }
+    stopAction() {
+        this.actionName = null;
+        this.actionTimeLeft = 0;
     }
 }
 //# sourceMappingURL=player.js.map

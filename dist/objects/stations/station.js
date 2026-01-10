@@ -31,30 +31,31 @@ export class Station {
     getProgress01() {
         return THREE.MathUtils.clamp(this.progress / this.holdSeconds, 0, 1);
     }
-    cancel() {
+    cancel(three, player) {
         if (this.active)
-            this.onCancel();
+            this.onCancel(three, player);
         this.active = false;
         this.progress = 0;
     }
-    tick(dt, controller, playerWorldPos, ctx) {
+    tick(dt, controller, playerWorldPos, ctx, three, player) {
         const inside = this.containsPoint(playerWorldPos);
         const holding = controller.getButtonState(this.interactKey);
         if (!inside || !holding) {
-            this.cancel();
+            this.cancel(three, player);
             return;
         }
         if (!this.active) {
             this.active = true;
             this.onBegin(ctx);
+            this.useAnimation(three, player);
         }
         this.progress += dt;
         if (this.progress >= this.holdSeconds) {
             this.progress = 0;
             this.active = false;
-            this.onComplete(ctx);
+            this.onComplete(ctx, three, player);
         }
     }
-    onCancel() { }
+    onCancel(three, player) { }
 }
 //# sourceMappingURL=station.js.map

@@ -11,7 +11,16 @@ export type StationContext = {
   player: THREE.Object3D;
 };
 
-export type PlayerAnimState = "Idle" | "Walk" | "Walk_Holding" | "Idle_Holding";
+
+export type VariantName = "default" | "knife";
+
+export type Variant = {
+  obj: THREE.Object3D;
+  mixer: THREE.AnimationMixer;
+  actions: Record<string, THREE.AnimationAction>;
+};
+
+export type PlayerAnimState = "Idle" | "Walk" | "Walk_Holding" | "Idle_Holding" | "Chop_Loop";
 
 export type SpawnedPlayer = {
   object: THREE.Object3D;

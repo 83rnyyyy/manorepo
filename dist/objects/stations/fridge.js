@@ -8,6 +8,8 @@ export class Fridge extends Station {
     onBegin(_ctx) {
         // optional: open fridge animation/sfx
     }
+    useAnimation(three) {
+    }
     onComplete(ctx) {
         const p = new THREE.Vector3();
         ctx.player.getWorldPosition(p);

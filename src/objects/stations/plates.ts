@@ -2,6 +2,7 @@
 import * as THREE from "three";
 import { Station} from "./station.js";
 import { StationContext } from "../types.js";
+import { ThreeRenderer } from "../../core/render.js";
 
 export class Plates extends Station {
   public plates: number = 4;
@@ -17,6 +18,15 @@ export class Plates extends Station {
 
   protected onBegin(_ctx: StationContext) {
     // optional: start animation/sfx
+  }
+  protected override useAnimation(three: ThreeRenderer): void {
+      three.switchPlayerVariant("knife");
+// if your PlayerAnimator caches actions, call something like:
+// this.animator.bind(this.three.playerActions);
+
+      
+
+    three.switchPlayerVariant("default");
   }
 
   protected onComplete(ctx: StationContext): void {

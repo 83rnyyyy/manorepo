@@ -2,6 +2,7 @@
 import * as THREE from "three";
 import { Station} from "./station.js";
 import { StationContext } from "../types.js";
+import { ThreeRenderer } from "../../core/render.js";
 
 export class Fridge extends Station {
   public prompt(): string {
@@ -11,6 +12,9 @@ export class Fridge extends Station {
   protected onBegin(_ctx: StationContext) {
     // optional: open fridge animation/sfx
   }
+  protected override useAnimation(three: ThreeRenderer): void {
+        
+    }
 
   protected onComplete(ctx: StationContext): void {
     const p = new THREE.Vector3();
