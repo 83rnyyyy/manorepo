@@ -51,6 +51,15 @@ export class Controller {
 		return this.buttonStates.get(button) ?? false;
 	}
 
+	public trackPointer(el: HTMLElement) {
+		el.addEventListener("pointerdown", (e) => {
+			if (e.button === 0) this.buttonStates.set("mouseLeft", true);
+		});
+		el.addEventListener("pointerup", (e) => {
+			if (e.button === 0) this.buttonStates.set("mouseLeft", false);
+		});
+		}
+
 	// public get mousePos(): Coordinates {
 	// 	return this.mouse;
 	// }

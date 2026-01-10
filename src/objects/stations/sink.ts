@@ -12,7 +12,7 @@ export class Sink extends Station {
   protected onBegin() {
     // optional: start sound/animation
   }
-  protected useAnimation(three:ThreeRenderer): void {
+  protected override useAnimation(three:ThreeRenderer): void {
     
   }
 

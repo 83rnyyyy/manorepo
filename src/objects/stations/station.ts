@@ -2,19 +2,20 @@
 import * as THREE from "three";
 import { Controller } from "../../core/controller.js";
 import { StationContext } from "../types.js";
-import { ThreeRenderer } from "../../core/render.js";
 import { Player } from "../player.js";
+import { ThreeRenderer } from "../../core/render.js";
 
 export abstract class Station {
   public readonly anchor: THREE.Object3D;
 
   public interactKey = "KeyE";
   public holdSeconds = 1.0;
-
+  public showPrompt: Boolean = true;
   // axis-aligned trigger box extents around anchor
   public halfX = 0.7;
   public halfY = 1.0;
   public halfZ = 0.7;
+  public rotation = 0;
 
   private box = new THREE.Box3();
   private progress = 0;
@@ -52,29 +53,27 @@ export abstract class Station {
     this.progress = 0;
   }
 
-
   public tick(
     dt: number,
     controller: Controller,
     playerWorldPos: THREE.Vector3,
     ctx: StationContext,
-    three: ThreeRenderer,
     player: Player,
+    three:ThreeRenderer,
+    showPrompt: Boolean
   ) {
-
     const inside = this.containsPoint(playerWorldPos);
     const holding = controller.getButtonState(this.interactKey);
 
     if (!inside || !holding) {
-      
       this.cancel(three,player);
       return;
     }
 
     if (!this.active) {
       this.active = true;
+      this.useAnimation(three, player);
       this.onBegin(ctx);
-      this.useAnimation(three, player)
     }
 
     this.progress += dt;
@@ -82,14 +81,14 @@ export abstract class Station {
     if (this.progress >= this.holdSeconds) {
       this.progress = 0;
       this.active = false;
-      this.onComplete(ctx,three,player);
+      this.onComplete(ctx, player, three);
     }
   }
 
   public abstract prompt(): string;
 
   protected abstract onBegin(_ctx: StationContext): void
-  protected onCancel(three: ThreeRenderer, player:Player): void {}
-  protected abstract onComplete(ctx: StationContext, three:ThreeRenderer, player:Player): void;
-  protected abstract useAnimation(three:ThreeRenderer, player?: Player): void;
+  protected onCancel(three:ThreeRenderer, player:Player):void {}
+  protected useAnimation(three:ThreeRenderer, player:Player):void {}
+  protected abstract onComplete(ctx: StationContext, player:Player, three:ThreeRenderer): void;
 }

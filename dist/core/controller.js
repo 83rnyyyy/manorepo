@@ -39,5 +39,15 @@ export class Controller {
     getButtonState(button) {
         return this.buttonStates.get(button) ?? false;
     }
+    trackPointer(el) {
+        el.addEventListener("pointerdown", (e) => {
+            if (e.button === 0)
+                this.buttonStates.set("mouseLeft", true);
+        });
+        el.addEventListener("pointerup", (e) => {
+            if (e.button === 0)
+                this.buttonStates.set("mouseLeft", false);
+        });
+    }
 }
 //# sourceMappingURL=controller.js.map

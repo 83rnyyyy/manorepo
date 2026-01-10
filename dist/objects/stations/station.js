@@ -4,10 +4,12 @@ export class Station {
     anchor;
     interactKey = "KeyE";
     holdSeconds = 1.0;
+    showPrompt = true;
     // axis-aligned trigger box extents around anchor
     halfX = 0.7;
     halfY = 1.0;
     halfZ = 0.7;
+    rotation = 0;
     box = new THREE.Box3();
     progress = 0;
     active = false;
@@ -37,7 +39,7 @@ export class Station {
         this.active = false;
         this.progress = 0;
     }
-    tick(dt, controller, playerWorldPos, ctx, three, player) {
+    tick(dt, controller, playerWorldPos, ctx, player, three, showPrompt) {
         const inside = this.containsPoint(playerWorldPos);
         const holding = controller.getButtonState(this.interactKey);
         if (!inside || !holding) {
@@ -46,16 +48,17 @@ export class Station {
         }
         if (!this.active) {
             this.active = true;
-            this.onBegin(ctx);
             this.useAnimation(three, player);
+            this.onBegin(ctx);
         }
         this.progress += dt;
         if (this.progress >= this.holdSeconds) {
             this.progress = 0;
             this.active = false;
-            this.onComplete(ctx, three, player);
+            this.onComplete(ctx, player, three);
         }
     }
     onCancel(three, player) { }
+    useAnimation(three, player) { }
 }
 //# sourceMappingURL=station.js.map

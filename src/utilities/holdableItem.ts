@@ -1,17 +1,19 @@
 // objects/items/holdableItem.ts
 import * as THREE from "three";
+import { ThreeRenderer } from "../core/render.js";
+import { worldObject } from "../objects/recipes/worldObject.js";
 
-export type ItemType = "plate" | "ingredient" | "pan";
 
-export abstract class HoldableItem {
-  public readonly object: THREE.Object3D;
+export type ItemType = "plate" | "pan" | "Rice";
+
+export abstract class HoldableItem extends worldObject{
   public abstract readonly type: ItemType;
 
   // pickup interaction radius (world distance)
   public pickupRadius = 0.9;
 
-  constructor(object: THREE.Object3D) {
-    this.object = object;
+  constructor(renderer: ThreeRenderer, object: THREE.Object3D ,x:number, y:number, z:number) {
+    super(x,y,z,object,renderer);
   }
 
   public getWorldPos(out = new THREE.Vector3()): THREE.Vector3 {

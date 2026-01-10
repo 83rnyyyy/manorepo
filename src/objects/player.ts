@@ -45,6 +45,7 @@ export class Player {
 		const start = p.clone().add(new THREE.Vector3(0, radius, 0));
 		const end = p.clone().add(new THREE.Vector3(0, radius + height, 0));
 		this.collider = new Capsule(start, end, radius);
+		this.bindHoldSocket();
   	}
 
   	
@@ -65,51 +66,46 @@ export class Player {
 		return this.object.getWorldPosition(out);
 	}
 
-	public pickup(item: HoldableItem) {
-		this.held = item;
+	public bindHoldSocket() {
 
-		// parent item to socket
-		this.holdSocket.add(item.object);
+      this.object.add(this.holdSocket); // fallback
+      this.holdSocket.position.set(0.05, 1.75, 1);
 
-		// reset local transform so it snaps nicely
-		item.object.position.set(0, 0, 0);
-		item.object.rotation.set(0, 0, 0);
 
-		// optional: scale for held look
-		item.object.scale.setScalar(1);
+  }
 
-		item.onPickup();
-	}
+  public pickup(item: HoldableItem) {
+    this.held = item;
 
- 	public dropToWorld(scene: THREE.Scene, worldPos?: THREE.Vector3) {
-		if (!this.held) return;
+    // parent item to socket
+    this.holdSocket.add(item.object);
 
-		const item = this.held;
-		this.held = null;
+    // reset local transform so it snaps nicely
+    item.object.position.set(0, 0, 0);
+    item.object.rotation.set(0, 0, 0);
 
-		// detach: add back to scene
-		scene.add(item.object);
+    // optional: scale for held look
+    item.object.scale.setScalar(1);
 
-		// place it slightly in front of player if no target provided
-		const dropPos = worldPos ?? this.getWorldPos(new THREE.Vector3()).add(new THREE.Vector3(0, 0, 0.8));
-		item.object.position.copy(dropPos);
-
-		item.onDrop();
-		return item;
-	}
+    item.onPickup();
+    this.hasItem = true;
+  }
 
   // Place item onto an anchor (like a station surface)
-	public placeOn(anchor: THREE.Object3D, localOffset = new THREE.Vector3(0, 1.0, 0)) {
+	public placeOn(anchor: THREE.Object3D, localOffset = new THREE.Vector3(0, 1, 0), yaw = 0) {
 		if (!this.held) return null;
-
 		const item = this.held;
 		this.held = null;
 
+		item.object.removeFromParent();
 		anchor.add(item.object);
-		item.object.position.copy(localOffset);
-		item.object.rotation.set(0, 0, 0);
+
+		const off = localOffset.clone().applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
+		item.object.position.copy(off);
+		item.object.rotation.set(0, yaw, 0);
 
 		item.onDrop();
+		this.hasItem = false;
 		return item;
 	}
 
@@ -136,7 +132,7 @@ export class Player {
 
 		const iz = (this.controller.getButtonState("KeyS") ? 1 : 0) + (this.controller.getButtonState("KeyW") ? -1 : 0);
 	
-		this.face8Dir(ix,iz,dt);
+		
 		const moving = ix !== 0 || iz !== 0;
 
 		// tick action timer (does NOT return early)
@@ -144,7 +140,15 @@ export class Player {
 			this.actionTimeLeft -= dt;
 			if (this.actionTimeLeft <= 0) this.actionName = null;
 		}
-		
+		if (this.movementDisabled) {
+			// keep idle anim if not in a forced action
+			if (!this.actionName) {
+			if (this.hasItem) this.animator.set("Idle_Holding");
+			else this.animator.set("Idle");
+			}
+			return;
+		}
+		this.face8Dir(ix,iz,dt);
 		// desired movement this frame
 		const move = new THREE.Vector3(ix, 0, iz);
 		if (move.lengthSq() > 0) move.normalize().multiplyScalar(this.moveSpeed * dt);

@@ -17,9 +17,7 @@ export class Trash extends Station {
     // TODO: delete item in player's hands
   }
 
-  protected override useAnimation(three: ThreeRenderer, player?: Player): void {
-    
-  }
+  
   protected override onBegin(_ctx: StationContext): void {
       
   }

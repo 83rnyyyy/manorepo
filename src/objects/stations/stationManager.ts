@@ -44,7 +44,7 @@ export class StationManager {
 
   if (this.focused) {
     const ctx: StationContext = { player: playerObj };
-    this.focused.tick(dt, controller, p, ctx, this.three, player);
+    this.focused.tick(dt, controller, p, ctx, player, this.three, true);
   }
 }
 

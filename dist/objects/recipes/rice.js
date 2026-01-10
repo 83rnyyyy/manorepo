@@ -1,8 +1,8 @@
 import { HoldableItem } from "../../utilities/holdableItem.js";
-export class PlateItem extends HoldableItem {
-    type = "plate";
+export class RiceItem extends HoldableItem {
+    type = "Rice";
     constructor(renderer, object, x, y, z) {
         super(renderer, object, x, y, z);
     }
 }
-//# sourceMappingURL=plate.js.map
+//# sourceMappingURL=rice.js.map

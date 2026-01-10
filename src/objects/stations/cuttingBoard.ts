@@ -17,12 +17,12 @@ export class CuttingBoard extends Station {
         three.switchPlayerVariant("knife");
         player.startAction("Chop_Loop", 1.25);
   }
-  protected onComplete(ctx: StationContext, three:ThreeRenderer): void {
+  protected onComplete(ctx: StationContext,player:Player, three:ThreeRenderer): void {
     const p = new THREE.Vector3();
     ctx.player.getWorldPosition(p);
     console.log("Chop complete at:", p.x.toFixed(2), p.y.toFixed(2), p.z.toFixed(2));
 	three.switchPlayerVariant("default");
-    // TODO: convert ingredient -> chopped ingredient
+	
   }
 
   protected override onCancel(three: ThreeRenderer,player:Player): void {

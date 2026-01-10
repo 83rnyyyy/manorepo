@@ -46,6 +46,8 @@
 
 		private itemManager = new ItemManager();
 		private platePrefab!: THREE.Object3D;
+		private ricePrefab!: THREE.Object3D;
+		private salmonFishPrefab:THREE.Object3D;
 		private testPlates: PlateItem[] = [];
 
 
@@ -69,7 +71,8 @@
 
 		this.mapObj = await this.three.loadGLB("/public/test6.glb");
 
-	
+		this.ricePrefab = await this.loadPrefab("/public/FoodIngredient_Rice.glb");
+		this.salmonFishPrefab = await this.loadPrefab("/public/FoodIngredient_SalmonFish.glb");
 		this.createStations();
 		this.createStationDebugHelpers();
 
@@ -90,11 +93,13 @@
 
 	this.clock.start();
 	this.platePrefab = await this.loadPrefab("/public/Environment/glTF/Environment_Plate.gltf");
+	
 	const plates = this.stationManager.getByType(Plates);
 	for(let i = 0; i< 3; i++){
-		const clonedPlate = this.platePrefab.clone();
-		this.testPlates.push(new PlateItem(this.three,clonedPlate, plates!.plateLocations[i]![0]!,plates!.plateLocations[i]![1]!,plates!.plateLocations[i]![2]!));
-	}
+	    const clonedPlate = this.platePrefab.clone();
+	    const plate = new PlateItem(this.three,clonedPlate, plates!.plateLocations[i]![0]!,plates!.plateLocations[i]![1]!,plates!.plateLocations[i]![2]!);
+	    plates?.currentItems.push(plate);
+  	}
 	
 
 	this.draw();
@@ -128,14 +133,20 @@
 
 		
 		const focused = this.stationManager.getFocused();
+
 		if (focused) {
-			this.progressUI.show(focused.prompt());
-			this.progressUI.setProgress(focused.getProgress01());
+			const text = focused.prompt();
+			if (text && text.trim().length > 0) {
+				this.progressUI.show(text);
+				this.progressUI.setProgress(focused.getProgress01());
+			} 
+			else {
+				this.progressUI.hide();
+			}
 		} 
 		else {
-		this.progressUI.hide();
+			this.progressUI.hide();
 		}
-		this.itemManager.update(dt, this.controller, this.player);
 
 	}
 
@@ -156,102 +167,103 @@
 
 
 	private createStations() {
-		
-		const sinkAnchor = this.makeAnchor(this.mapObj, "sinkAnchor", new THREE.Vector3(16.66, 0.29 ,-11.81));
-		const boardAnchor = this.makeAnchor(this.mapObj, "boardAnchor", new THREE.Vector3(11 ,1, -4.59));
-		const stoveAnchor = this.makeAnchor(this.mapObj, "stoveAnchor", new THREE.Vector3(18.71, 0.50 ,-11.44));
-		const fridgeAnchor = this.makeAnchor(this.mapObj, "fridgeAnchor", new THREE.Vector3(20.99, 0.12, -11.50));
-		const trashAnchor = this.makeAnchor(this.mapObj, "fridgeAnchor", new THREE.Vector3(7.87, 0.46, -8.90) )
-		const platesAnchor = this.makeAnchor(this.mapObj, "platesAnchor", new THREE.Vector3(15.09, 0.23, -11.86));
-		const counterAnchor1 = this.makeAnchor(this.mapObj, "sinkAnchor1", new THREE.Vector3(13.24, 0.28, -2.70));
-		const counterAnchor2 = this.makeAnchor(this.mapObj, "sinkAnchor1", new THREE.Vector3(15.21, 0.39, -2.72));
-		const counterAnchor3 = this.makeAnchor(this.mapObj, "sinkAnchor1", new THREE.Vector3(13.24, 0.28, -2.70));
-		const counterAnchor4 = this.makeAnchor(this.mapObj, "sinkAnchor1", new THREE.Vector3(17.02, 0.28, -2.69));
-		const counterAnchor5 = this.makeAnchor(this.mapObj, "sinkAnchor1", new THREE.Vector3(20.23, 0.61, -3.27));
-		const counterAnchor6 = this.makeAnchor(this.mapObj, "sinkAnchor1", new THREE.Vector3(14.03, 0.28, -11.89));
-		const counterAnchor7 = this.makeAnchor(this.mapObj, "sinkAnchor7", new THREE.Vector3(18.62, 0.20, -2.76));
-		const sink = new Sink(sinkAnchor);
-		sink.halfX = 0.6; 
-		sink.halfY = 1.0; 
-		sink.halfZ = 0.6;
-		sink.holdSeconds = 1.2;
-		this.stationManager.add(sink);
+    
+    const sinkAnchor = this.makeAnchor(this.mapObj, "sinkAnchor", new THREE.Vector3(16.66, 0.29 ,-11.81));
+    const boardAnchor = this.makeAnchor(this.mapObj, "boardAnchor", new THREE.Vector3(11 ,1, -4.59));
+    const stoveAnchor = this.makeAnchor(this.mapObj, "stoveAnchor", new THREE.Vector3(18.71, 0.50 ,-11.44));
+    const fridgeAnchor = this.makeAnchor(this.mapObj, "fridgeAnchor", new THREE.Vector3(20.99, 0.12, -11.50));
+    const trashAnchor = this.makeAnchor(this.mapObj, "fridgeAnchor", new THREE.Vector3(7.87, 0.46, -8.90) )
+    const platesAnchor = this.makeAnchor(this.mapObj, "platesAnchor", new THREE.Vector3(15.09, 0.23, -11.86));
+    const counterAnchor1 = this.makeAnchor(this.mapObj, "sinkAnchor1", new THREE.Vector3(13.24, 0.61, -2.70));
+    const counterAnchor2 = this.makeAnchor(this.mapObj, "sinkAnchor1", new THREE.Vector3(15.21, 0.61, -2.72));
+    const counterAnchor3 = this.makeAnchor(this.mapObj, "sinkAnchor1", new THREE.Vector3(13.24, 0.61, -2.70));
+    const counterAnchor4 = this.makeAnchor(this.mapObj, "sinkAnchor1", new THREE.Vector3(17.02, 0.61, -2.69));
+    const counterAnchor5 = this.makeAnchor(this.mapObj, "sinkAnchor1", new THREE.Vector3(20.23, 0.61, -3.27));
+    const counterAnchor6 = this.makeAnchor(this.mapObj, "sinkAnchor1", new THREE.Vector3(14.03, 0.61, -11.89));
+    const sink = new Sink(sinkAnchor);
+    sink.halfX = 0.6; 
+    sink.halfY = 1.0; 
+    sink.halfZ = 0.6;
+    sink.holdSeconds = 1.2;
+    this.stationManager.add(sink);
 
-		const board = new CuttingBoard(boardAnchor);
-		board.halfX = 1.25; 
-		board.halfY = 1; 
-		board.halfZ = 1;
-		board.holdSeconds = 1.0;
-		this.stationManager.add(board);
+    const board = new CuttingBoard(boardAnchor);
+    board.halfX = 1.25; 
+    board.halfY = 1; 
+    board.halfZ = 1;
+    board.holdSeconds = 1.0;
+    this.stationManager.add(board);
 
-		const stove = new Stove(stoveAnchor);
-		stove.halfX = 0.7; 
-		stove.halfY = 1.0; 
-		stove.halfZ = 0.7;
-		stove.holdSeconds = 1.5;
-		this.stationManager.add(stove);
+    const stove = new Stove(stoveAnchor);
+    stove.halfX = 0.7; 
+    stove.halfY = 1.0; 
+    stove.halfZ = 0.7;
+    stove.holdSeconds = 1.5;
+    this.stationManager.add(stove);
 
-		const fridge = new Fridge(fridgeAnchor);
-		fridge.halfX = 0.7; 
-		fridge.halfY = 1.0; 
-		fridge.halfZ = 0.7;
-		fridge.holdSeconds = 0.8;
-		this.stationManager.add(fridge);
+    const fridge = new Fridge(fridgeAnchor, this.ricePrefab, this.salmonFishPrefab, this.three);
+    fridge.halfX = 0.7; 
+    fridge.halfY = 1.0; 
+    fridge.halfZ = 0.7;
+    fridge.holdSeconds = 0.8;
+    this.stationManager.add(fridge);
 
-		const trash = new Trash(trashAnchor);
-		trash.halfX = 0.7; 
-		trash.halfY = 1.0; 
-		trash.halfZ = 0.7;
-		this.stationManager.add(trash);
+    const trash = new Trash(trashAnchor);
+    trash.halfX = 0.7; 
+    trash.halfY = 1.0; 
+    trash.halfZ = 0.7;
+    this.stationManager.add(trash);
 
-		const plates = new Plates(platesAnchor);
-		plates.halfX = 0.6; 
-		plates.halfY = 1;
-		plates.halfZ = 0.75;
-		this.stationManager.add(plates);
+    const plates = new Plates(platesAnchor);
+    plates.halfX = 0.6; 
+    plates.halfY = 1;
+    plates.halfZ = 0.75;
+    this.stationManager.add(plates);
 
-		const counter1 = new Counter(counterAnchor1);
-		counter1.halfX = 0.6;
-		counter1.halfY = 1;
-		counter1.halfZ = 0.6;
-		this.stationManager.add(counter1);
+    const counter1 = new Counter(counterAnchor1);
+    counter1.halfX = 0.6;
+    counter1.halfY = 1;
+    counter1.halfZ = 0.6;
+    counter1.rotation = Math.PI*3/2;
+    this.stationManager.add(counter1);
 
-		const counter2 = new Counter(counterAnchor2);
-		counter2.halfX = 0.6;
-		counter2.halfY = 1;
-		counter2.halfZ = 0.6;
-		this.stationManager.add(counter2);
+    const counter2 = new Counter(counterAnchor2);
+    counter2.halfX = 0.6;
+    counter2.halfY = 1;
+    counter2.halfZ = 0.6;
+    counter2.rotation = Math.PI*3/2;
+    this.stationManager.add(counter2);
 
-		const counter3 = new Counter(counterAnchor3);
-		counter3.halfX = 0.6;
-		counter3.halfY = 1;
-		counter3.halfZ = 0.6;
-		this.stationManager.add(counter3);
+    const counter3 = new Counter(counterAnchor3);
+    counter3.halfX = 0.6;
+    counter3.halfY = 1;
+    counter3.halfZ = 0.6;
+    counter3.rotation = Math.PI*3/2;
+    this.stationManager.add(counter3);
 
-		const counter4 = new Counter(counterAnchor4);
-		counter4.halfX = 0.6;
-		counter4.halfY = 1;
-		counter4.halfZ = 0.6;
-		this.stationManager.add(counter4);
+    const counter4 = new Counter(counterAnchor4);
+    counter4.halfX = 0.6;
+    counter4.halfY = 1;
+    counter4.halfZ = 0.6;
+    counter4.rotation = Math.PI*3/2;
+    this.stationManager.add(counter4);
 
-		const counter5 = new Counter(counterAnchor5);
-		counter5.halfX = 0.6;
-		counter5.halfY = 1;
-		counter5.halfZ = 0.6;
-		this.stationManager.add(counter5);
+    const counter5 = new Counter(counterAnchor5);
+    counter5.halfX = 0.6;
+    counter5.halfY = 1;
+    counter5.halfZ = 0.6;
+    this.stationManager.add(counter5);
 
-		const counter6 = new Counter(counterAnchor6);
-		counter6.halfX = 0.6;
-		counter6.halfY = 1;
-		counter6.halfZ = 0.8;
-		this.stationManager.add(counter6);
+    const counter6 = new Counter(counterAnchor6);
+    counter6.halfX = 0.6;
+    counter6.halfY = 1;
+    counter6.halfZ = 0.6;
+    counter6.rotation = Math.PI/2;
+    this.stationManager.add(counter6);
 
-		const counter7 = new Counter(counterAnchor7);
-		this.stationManager.add(counter7);
-		// keep refs so we can draw/update helpers
-		this.stations = [sink, board, stove, fridge, trash, plates, counter1, counter2, counter3, counter4, counter5, counter6], counter7;
-	}
-
+    // keep refs so we can draw/update helpers
+    this.stations = [sink, board, stove, fridge, trash, plates, counter1, counter2, counter3, counter4, counter5, counter6];
+  }
 	private createStationDebugHelpers() {
 		// remove old if any
 		for (const h of this.stationHelpers) this.three.scene.remove(h);

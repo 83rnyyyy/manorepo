@@ -37,6 +37,7 @@ export class Player {
         const start = p.clone().add(new THREE.Vector3(0, radius, 0));
         const end = p.clone().add(new THREE.Vector3(0, radius + height, 0));
         this.collider = new Capsule(start, end, radius);
+        this.bindHoldSocket();
     }
     startAction(name, durationSec) {
         this.actionName = name;
@@ -52,6 +53,10 @@ export class Player {
     getWorldPos(out = new THREE.Vector3()) {
         return this.object.getWorldPosition(out);
     }
+    bindHoldSocket() {
+        this.object.add(this.holdSocket); // fallback
+        this.holdSocket.position.set(0.05, 1.75, 1);
+    }
     pickup(item) {
         this.held = item;
         // parent item to socket
@@ -62,30 +67,21 @@ export class Player {
         // optional: scale for held look
         item.object.scale.setScalar(1);
         item.onPickup();
-    }
-    dropToWorld(scene, worldPos) {
-        if (!this.held)
-            return;
-        const item = this.held;
-        this.held = null;
-        // detach: add back to scene
-        scene.add(item.object);
-        // place it slightly in front of player if no target provided
-        const dropPos = worldPos ?? this.getWorldPos(new THREE.Vector3()).add(new THREE.Vector3(0, 0, 0.8));
-        item.object.position.copy(dropPos);
-        item.onDrop();
-        return item;
+        this.hasItem = true;
     }
     // Place item onto an anchor (like a station surface)
-    placeOn(anchor, localOffset = new THREE.Vector3(0, 1.0, 0)) {
+    placeOn(anchor, localOffset = new THREE.Vector3(0, 1, 0), yaw = 0) {
         if (!this.held)
             return null;
         const item = this.held;
         this.held = null;
+        item.object.removeFromParent();
         anchor.add(item.object);
-        item.object.position.copy(localOffset);
-        item.object.rotation.set(0, 0, 0);
+        const off = localOffset.clone().applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
+        item.object.position.copy(off);
+        item.object.rotation.set(0, yaw, 0);
         item.onDrop();
+        this.hasItem = false;
         return item;
     }
     face8Dir(ix, iz, dt) {
@@ -103,7 +99,6 @@ export class Player {
     update(dt) {
         const ix = (this.controller.getButtonState("KeyD") ? 1 : 0) + (this.controller.getButtonState("KeyA") ? -1 : 0);
         const iz = (this.controller.getButtonState("KeyS") ? 1 : 0) + (this.controller.getButtonState("KeyW") ? -1 : 0);
-        this.face8Dir(ix, iz, dt);
         const moving = ix !== 0 || iz !== 0;
         // tick action timer (does NOT return early)
         if (this.actionName) {
@@ -111,6 +106,17 @@ export class Player {
             if (this.actionTimeLeft <= 0)
                 this.actionName = null;
         }
+        if (this.movementDisabled) {
+            // keep idle anim if not in a forced action
+            if (!this.actionName) {
+                if (this.hasItem)
+                    this.animator.set("Idle_Holding");
+                else
+                    this.animator.set("Idle");
+            }
+            return;
+        }
+        this.face8Dir(ix, iz, dt);
         // desired movement this frame
         const move = new THREE.Vector3(ix, 0, iz);
         if (move.lengthSq() > 0)
