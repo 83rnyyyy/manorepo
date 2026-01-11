@@ -28,7 +28,6 @@ export class Counter extends Station {
             this.heldItem = player.placeOn(this.anchor, new THREE.Vector3(0.85, 1.35, 0), this.rotation);
             this.hasItem = true;
         }
-        // TODO: convert ingredient -> chopped ingredient
     }
 }
 //# sourceMappingURL=counter.js.map

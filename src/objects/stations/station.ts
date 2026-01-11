@@ -62,9 +62,10 @@ export abstract class Station {
     three:ThreeRenderer,
     showPrompt: Boolean
   ) {
+    
     const inside = this.containsPoint(playerWorldPos);
     const holding = controller.getButtonState(this.interactKey);
-
+  
     if (!inside || !holding) {
       this.cancel(three,player);
       return;
@@ -85,7 +86,7 @@ export abstract class Station {
     }
   }
 
-  public abstract prompt(): string;
+  public abstract prompt(player?:Player): string;
 
   protected abstract onBegin(_ctx: StationContext): void
   protected onCancel(three:ThreeRenderer, player:Player):void {}

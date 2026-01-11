@@ -4,11 +4,16 @@ import { Station} from "./station.js";
 import { StationContext } from "../types.js";
 import { ThreeRenderer } from "../../core/render.js";
 import { Player } from "../player.js";
+import { ItemType } from "../../utilities/holdableItem.js";
 
 export class CuttingBoard extends Station {
-  public prompt(): string {
-    return "Hold E to chop";
-  }
+	private itemPlaced: ItemType | null;
+	public prompt(player:Player): string {
+		if(this.itemPlaced == null && player.hasHeldItem()) return "Hold E to place item";
+		if(this.itemPlaced == null) return "";
+		if(this.itemPlaced == "chopped_ingredient") return "Hold E to pick up";
+		return "Hold E to chop";
+	}
 
   protected onBegin(_ctx: StationContext) {      
   

@@ -2,7 +2,14 @@
 import * as THREE from "three";
 import { Station } from "./station.js";
 export class CuttingBoard extends Station {
-    prompt() {
+    itemPlaced;
+    prompt(player) {
+        if (this.itemPlaced == null && player.hasHeldItem())
+            return "Hold E to place item";
+        if (this.itemPlaced == null)
+            return "";
+        if (this.itemPlaced == "chopped_ingredient")
+            return "Hold E to pick up";
         return "Hold E to chop";
     }
     onBegin(_ctx) {

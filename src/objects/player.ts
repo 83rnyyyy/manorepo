@@ -62,7 +62,7 @@ export class Player {
 	public getHeldItem(): HoldableItem | null {
 		return this.held;
 	}
-		public getWorldPos(out = new THREE.Vector3()): THREE.Vector3 {
+	public getWorldPos(out = new THREE.Vector3()): THREE.Vector3 {
 		return this.object.getWorldPosition(out);
 	}
 

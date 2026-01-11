@@ -23,10 +23,10 @@ export class Plates extends Station {
         const p = new THREE.Vector3();
         ctx.player.getWorldPosition(p);
         console.log("Chop complete at:", p.x.toFixed(2), p.y.toFixed(2), p.z.toFixed(2));
-        this.plates--;
         if (this.plates !== 0) {
             player.pickup(this.takePlate());
         }
+        this.plates--;
         // TODO: convert ingredient -> chopped ingredient
     }
 }

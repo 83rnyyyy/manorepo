@@ -18,34 +18,34 @@ export class StationManager {
   }
 
   public update(dt: number, controller: Controller, player: Player, three:ThreeRenderer) {
-  const playerObj = player.object;
+      const playerObj = player.object;
 
-  const p = new THREE.Vector3();
-  playerObj.getWorldPosition(p);
+      const p = new THREE.Vector3();
+      playerObj.getWorldPosition(p);
 
-  // pick closest station that contains player
-  let best: Station | null = null;
-  let bestDist = Infinity;
+      // pick closest station that contains player
+      let best: Station | null = null;
+      let bestDist = Infinity;
 
-  for (const s of this.stations) {
-    if (!s.containsPoint(p)) continue;
+      for (const s of this.stations) {
+        if (!s.containsPoint(p)) continue;
 
-    const c = s.getBox().getCenter(new THREE.Vector3());
-    const d = p.distanceTo(c);
+        const c = s.getBox().getCenter(new THREE.Vector3());
+        const d = p.distanceTo(c);
 
-    if (d < bestDist) {
-      bestDist = d;
-      best = s;
-    }
-  }
+        if (d < bestDist) {
+          bestDist = d;
+          best = s;
+        }
+      }
 
-  if (this.focused && this.focused !== best) this.focused.cancel(three,player);
-  this.focused = best;
+      if (this.focused && this.focused !== best) this.focused.cancel(three,player);
+      this.focused = best;
 
-  if (this.focused) {
-    const ctx: StationContext = { player: playerObj };
-    this.focused.tick(dt, controller, p, ctx, player, this.three, true);
-  }
+      if (this.focused) {
+        const ctx: StationContext = { player: playerObj };
+        this.focused.tick(dt, controller, p, ctx, player, this.three, true);
+      }
 }
 
   public getFocused(): Station | null {

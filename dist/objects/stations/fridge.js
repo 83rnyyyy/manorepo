@@ -1,6 +1,7 @@
 import { Station } from "./station.js";
 import { FridgeMenu } from "../../utilities/fridgeMenu.js";
 import { RiceItem } from "../recipes/rice.js";
+import { SalmonFishItem } from "../recipes/salmonFish.js";
 export class Fridge extends Station {
     ricePrefab;
     salmonPrefab;
@@ -30,7 +31,8 @@ export class Fridge extends Station {
                 }
                 if (picked === "Salmon") {
                     const obj = this.salmonPrefab.clone(true);
-                    // spawn SalmonItem here
+                    const item = new SalmonFishItem(this.three, obj, 0, 0, 0);
+                    this.player.pickup(item);
                 }
             }
         });

@@ -23,7 +23,7 @@ export class Counter extends Station {
     ctx.player.getWorldPosition(p);
     console.log("Chop complete at:", p.x.toFixed(2), p.y.toFixed(2), p.z.toFixed(2));
     if(this.hasItem){
-      if(player.hasHeldItem()) return;
+      if(player.hasHeldItem() && (player.getHeldItem()?.type != "pot")) return;
       player.pickup(this.heldItem!);
       this.heldItem = null;
       this.hasItem = false;
@@ -33,6 +33,6 @@ export class Counter extends Station {
       this.hasItem = true;
     }
     
-    // TODO: convert ingredient -> chopped ingredient
+    
   }
 }

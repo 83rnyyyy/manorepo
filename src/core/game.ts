@@ -21,6 +21,7 @@
 	import { GLTFLoader } from "three/examples/jsm/Addons.js";
 	import { PlateItem } from "../objects/recipes/plate.js";
 	import { Counter } from "../objects/stations/counter.js";
+import { PotItem } from "../objects/recipes/pot.js";
 
 	export class Game {
 		private three: ThreeRenderer;
@@ -48,6 +49,8 @@
 		private platePrefab!: THREE.Object3D;
 		private ricePrefab!: THREE.Object3D;
 		private salmonFishPrefab:THREE.Object3D;
+		private potPrefab:THREE.Object3D;
+		private panPrefab:THREE.Object3D;
 		private testPlates: PlateItem[] = [];
 
 
@@ -69,10 +72,11 @@
 		await this.three.addPlayerVariant("cooking", "/public/Panda_Pan.glb");
 		this.animator = new PlayerAnimator(this.three.playerActions);
 
-		this.mapObj = await this.three.loadGLB("/public/test6.glb");
+		this.mapObj = await this.three.loadGLB("/public/test7.glb");
 
 		this.ricePrefab = await this.loadPrefab("/public/FoodIngredient_Rice.glb");
 		this.salmonFishPrefab = await this.loadPrefab("/public/FoodIngredient_SalmonFish.glb");
+
 		this.createStations();
 		this.createStationDebugHelpers();
 
@@ -100,6 +104,12 @@
 	    const plate = new PlateItem(this.three,clonedPlate, plates!.plateLocations[i]![0]!,plates!.plateLocations[i]![1]!,plates!.plateLocations[i]![2]!);
 	    plates?.currentItems.push(plate);
   	}
+
+	this.potPrefab = await this.loadPrefab("/public/Environment_Pot_1_Empty.glb");
+	const stove = this.stationManager.getByType(Stove);
+	const pot = new PotItem(this.three, this.potPrefab, stove!.cookwareLoc[0]!,stove!.cookwareLoc[1]!,stove!.cookwareLoc[2]!);
+	stove!.heldItem = pot;
+	
 	
 
 	this.draw();
@@ -135,7 +145,7 @@
 		const focused = this.stationManager.getFocused();
 
 		if (focused) {
-			const text = focused.prompt();
+			const text = focused.prompt(this.player);
 			if (text && text.trim().length > 0) {
 				this.progressUI.show(text);
 				this.progressUI.setProgress(focused.getProgress01());
