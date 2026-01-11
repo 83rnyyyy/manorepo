@@ -4,7 +4,7 @@ import { ThreeRenderer } from "../core/render.js";
 import { worldObject } from "../objects/recipes/worldObject.js";
 
 
-export type ItemType = "plate" | "pan" | "Rice";
+export type ItemType = "plate" | "pan" | "Rice" | "SalmonFish";
 
 export abstract class HoldableItem extends worldObject{
   public abstract readonly type: ItemType;
