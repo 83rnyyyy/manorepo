@@ -4,7 +4,7 @@ import { Station } from "./station.js";
 export class CuttingBoard extends Station {
     itemPlaced;
     prompt(player) {
-        if (this.itemPlaced == null && player.hasHeldItem())
+        if (this.itemPlaced == null && player.getHeldItem())
             return "Hold E to place item";
         if (this.itemPlaced == null)
             return "";

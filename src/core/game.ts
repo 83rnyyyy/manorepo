@@ -49,7 +49,9 @@ import { PotItem } from "../objects/recipes/pot.js";
 		private platePrefab!: THREE.Object3D;
 		private ricePrefab!: THREE.Object3D;
 		private salmonFishPrefab:THREE.Object3D;
-		private potPrefab:THREE.Object3D;
+		private potEmptyPrefab:THREE.Object3D;
+		private potFilledUncookedPrefab: THREE.Object3D;
+		private potFilledCookedPrefab:THREE.Object3D;
 		private panPrefab:THREE.Object3D;
 		private testPlates: PlateItem[] = [];
 
@@ -105,9 +107,11 @@ import { PotItem } from "../objects/recipes/pot.js";
 	    plates?.currentItems.push(plate);
   	}
 
-	this.potPrefab = await this.loadPrefab("/public/Environment_Pot_1_Empty.glb");
+	this.potEmptyPrefab = await this.loadPrefab("/public/Environment_Pot_1_Empty.glb");
+	this.potFilledCookedPrefab = await this.loadPrefab("/public/Environment_Pot_1_Filled.glb");
+	this.potFilledUncookedPrefab = await this.loadPrefab("/public/Environment/glTF/Environment_Pot_1_Filled.gltf");
 	const stove = this.stationManager.getByType(Stove);
-	const pot = new PotItem(this.three, this.potPrefab, stove!.cookwareLoc[0]!,stove!.cookwareLoc[1]!,stove!.cookwareLoc[2]!);
+	const pot = new PotItem(this.three, this.potEmptyPrefab, this.potFilledCookedPrefab, this.potFilledUncookedPrefab, stove!.cookwareLoc[0]!,stove!.cookwareLoc[1]!,stove!.cookwareLoc[2]!);
 	stove!.heldItem = pot;
 	
 	

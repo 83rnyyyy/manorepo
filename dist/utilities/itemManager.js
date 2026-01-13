@@ -14,7 +14,7 @@ export class ItemManager {
         // Only try pickup when key is down
         if (!controller.getButtonState("KeyE"))
             return;
-        if (player.hasHeldItem())
+        if (player.getHeldItem())
             return;
         const p = player.getWorldPos(new THREE.Vector3());
         // closest item within radius

@@ -33,7 +33,7 @@ export class StationManager {
         this.focused = best;
         if (this.focused) {
             const ctx = { player: playerObj };
-            this.focused.tick(dt, controller, p, ctx, player, this.three, true);
+            this.focused.tick(dt, controller, p, ctx, player, this.three);
         }
     }
     getFocused() {

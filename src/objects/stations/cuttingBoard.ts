@@ -9,7 +9,7 @@ import { ItemType } from "../../utilities/holdableItem.js";
 export class CuttingBoard extends Station {
 	private itemPlaced: ItemType | null;
 	public prompt(player:Player): string {
-		if(this.itemPlaced == null && player.hasHeldItem()) return "Hold E to place item";
+		if(this.itemPlaced == null && player.getHeldItem()) return "Hold E to place item";
 		if(this.itemPlaced == null) return "";
 		if(this.itemPlaced == "chopped_ingredient") return "Hold E to pick up";
 		return "Hold E to chop";

@@ -11,7 +11,7 @@ export class Player {
 	public movementDisabled: boolean = false;
 	public readonly object: THREE.Object3D;
 	public moveSpeed = 6;
-	public hasItem = false;
+	
 	private collider: Capsule;
   	private animator:PlayerAnimator;
 	private modelYawOffset = 0; // try Math.PI, Math.PI/2, -Math.PI/2 if needed
@@ -55,18 +55,37 @@ export class Player {
     	this.actionTimeLeft = durationSec;
     	this.animator.set(name); 
   	}
-	public hasHeldItem(): boolean {
-		return this.held !== null;
-	}
+
 
 	public getHeldItem(): HoldableItem | null {
 		return this.held;
 	}
-	public getWorldPos(out = new THREE.Vector3()): THREE.Vector3 {
+		public getWorldPos(out = new THREE.Vector3()): THREE.Vector3 {
 		return this.object.getWorldPosition(out);
 	}
-
-	public bindHoldSocket() {
+	public removeHeldItem(): HoldableItem | null{
+		if(this.held){
+			const item = this.held;
+			this.held = null;
+			
+			item!.object.removeFromParent();
+			return item;
+		}
+		else return null;
+	}
+	public deleteHeldItem(): void{
+		if(this.held){
+		this.held.object.removeFromParent();
+		this.held.object.traverse((o: any) => {
+			o.geometry?.dispose?.();
+			const m = o.material;
+			if (Array.isArray(m)) m.forEach((x) => x.dispose?.());
+			else m?.dispose?.();
+		});
+		}
+		
+	}
+	public bindHoldSocket(): void{
 
       this.object.add(this.holdSocket); // fallback
       this.holdSocket.position.set(0.05, 1.75, 1);
@@ -74,7 +93,7 @@ export class Player {
 
   }
 
-  public pickup(item: HoldableItem) {
+  public pickup(item: HoldableItem): void {
     this.held = item;
 
     // parent item to socket
@@ -88,11 +107,11 @@ export class Player {
     item.object.scale.setScalar(1);
 
     item.onPickup();
-    this.hasItem = true;
+    
   }
 
   // Place item onto an anchor (like a station surface)
-	public placeOn(anchor: THREE.Object3D, localOffset = new THREE.Vector3(0, 1, 0), yaw = 0) {
+	public placeOn(anchor: THREE.Object3D, localOffset = new THREE.Vector3(0, 1, 0), yaw = 0): HoldableItem | null {
 		if (!this.held) return null;
 		const item = this.held;
 		this.held = null;
@@ -105,7 +124,7 @@ export class Player {
 		item.object.rotation.set(0, yaw, 0);
 
 		item.onDrop();
-		this.hasItem = false;
+		
 		return item;
 	}
 
@@ -143,7 +162,7 @@ export class Player {
 		if (this.movementDisabled) {
 			// keep idle anim if not in a forced action
 			if (!this.actionName) {
-			if (this.hasItem) this.animator.set("Idle_Holding");
+			if (this.held) this.animator.set("Idle_Holding");
 			else this.animator.set("Idle");
 			}
 			return;
@@ -153,10 +172,10 @@ export class Player {
 		const move = new THREE.Vector3(ix, 0, iz);
 		if (move.lengthSq() > 0) move.normalize().multiplyScalar(this.moveSpeed * dt);
 
-		// iterative "move + collide + slide"
+		
 		const EPS = 1e-4;
 		const MAX_ITERS = 1;
-		const PUSH_FACTOR = 0.5
+		const PUSH_FACTOR = 1
 		let remaining = move.clone();
 
 		for (let iter = 0; iter < MAX_ITERS && remaining.lengthSq() > 0; iter++) {
@@ -186,10 +205,10 @@ export class Player {
 
 		if (!this.actionName) {
 			if (!moving) {
-				if (this.hasItem) this.animator.set("Idle_Holding");
+				if (this.held) this.animator.set("Idle_Holding");
 				else this.animator.set("Idle");
 			} else {
-				if (this.hasItem) this.animator.set("Walk_Holding");
+				if (this.held) this.animator.set("Walk_Holding");
 				else this.animator.set("Walk");
 			}
 		}

@@ -20,7 +20,7 @@ export class Plates extends Station {
   }
 
   protected onBegin(_ctx: StationContext) {
-    // optional: start animation/sfx
+    
   }
   private takePlate(): HoldableItem | null{
     const plate = this.currentItems.pop() ?? null
@@ -38,6 +38,6 @@ export class Plates extends Station {
     }
     this.plates--;
     
-    // TODO: convert ingredient -> chopped ingredient
+    
   }
 }

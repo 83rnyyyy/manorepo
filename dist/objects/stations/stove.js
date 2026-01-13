@@ -5,29 +5,52 @@ export class Stove extends Station {
     hasItem = true;
     heldItem;
     cookwareLoc = [2.7, 1.6, -8.69];
-    player;
     prompt(player) {
-        if (!player.hasHeldItem() && this.hasItem)
-            return "Hold E to pick up";
-        else if (player.hasHeldItem() && player.getHeldItem()?.type == "pot" || player.getHeldItem()?.type == "pan")
+        if (!player.getHeldItem() && this.hasItem)
+            if (this.heldItem?.type == "pot" && this.heldItem.potState == this.heldItem.uncooked)
+                return "Hold E to cook rice";
+            else
+                return "Hold E to pick up";
+        else if (player.getHeldItem() && player.getHeldItem()?.type == "pot" || player.getHeldItem()?.type == "pan")
             return "Hold E to place Item";
         return "Hold E to cook";
     }
     onBegin(_ctx) {
         // optional: start cooking animation/sfx
     }
+    tick(dt, controller, playerWorldPos, ctx, player, three) {
+        if (this.heldItem) {
+            if (this.heldItem.type == "pot" && this.heldItem.potState == this.heldItem.empty) {
+                if (player.getHeldItem() && player.getHeldItem().type != "Rice")
+                    return;
+            }
+        }
+        super.tick(dt, controller, playerWorldPos, ctx, player, three);
+    }
     onComplete(ctx, player) {
-        const p = new THREE.Vector3();
-        ctx.player.getWorldPosition(p);
-        console.log("Cook complete at:", p.x.toFixed(2), p.y.toFixed(2), p.z.toFixed(2));
         if (this.hasItem) {
-            if (player.hasHeldItem())
-                return;
-            player.pickup(this.heldItem);
-            this.heldItem = null;
-            this.hasItem = false;
+            if (this.heldItem?.type == "pot") {
+                const pot = this.heldItem;
+                ;
+                if (pot.potState == pot.uncooked) {
+                    pot.swapToFilledCooked();
+                    return;
+                }
+                else if (player.getHeldItem() && player.getHeldItem()?.type == "Rice") {
+                    pot.swapToFilledUncooked();
+                    player.removeHeldItem();
+                    return;
+                }
+                else {
+                    player.pickup(this.heldItem);
+                    this.heldItem = null;
+                    this.hasItem = false;
+                }
+            }
         }
         else {
+            if (player.getHeldItem())
+                return;
             this.heldItem = player.placeOn(this.anchor, new THREE.Vector3(0, 1.5, -1.1), this.rotation);
             this.hasItem = true;
         }

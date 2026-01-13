@@ -60,7 +60,7 @@ export abstract class Station {
     ctx: StationContext,
     player: Player,
     three:ThreeRenderer,
-    showPrompt: Boolean
+    
   ) {
     
     const inside = this.containsPoint(playerWorldPos);

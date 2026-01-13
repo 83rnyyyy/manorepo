@@ -19,7 +19,7 @@ export class ItemManager {
   public update(_dt: number, controller: Controller, player: Player) {
     // Only try pickup when key is down
     if (!controller.getButtonState("KeyE")) return;
-    if (player.hasHeldItem()) return;
+    if (player.getHeldItem()) return;
 
     const p = player.getWorldPos(new THREE.Vector3());
 

@@ -39,7 +39,9 @@ export class Game {
     platePrefab;
     ricePrefab;
     salmonFishPrefab;
-    potPrefab;
+    potEmptyPrefab;
+    potFilledUncookedPrefab;
+    potFilledCookedPrefab;
     panPrefab;
     testPlates = [];
     constructor() {
@@ -77,9 +79,11 @@ export class Game {
             const plate = new PlateItem(this.three, clonedPlate, plates.plateLocations[i][0], plates.plateLocations[i][1], plates.plateLocations[i][2]);
             plates?.currentItems.push(plate);
         }
-        this.potPrefab = await this.loadPrefab("/public/Environment_Pot_1_Empty.glb");
+        this.potEmptyPrefab = await this.loadPrefab("/public/Environment_Pot_1_Empty.glb");
+        this.potFilledCookedPrefab = await this.loadPrefab("/public/Environment_Pot_1_Filled.glb");
+        this.potFilledUncookedPrefab = await this.loadPrefab("/public/Environment/glTF/Environment_Pot_1_Filled.gltf");
         const stove = this.stationManager.getByType(Stove);
-        const pot = new PotItem(this.three, this.potPrefab, stove.cookwareLoc[0], stove.cookwareLoc[1], stove.cookwareLoc[2]);
+        const pot = new PotItem(this.three, this.potEmptyPrefab, this.potFilledCookedPrefab, this.potFilledUncookedPrefab, stove.cookwareLoc[0], stove.cookwareLoc[1], stove.cookwareLoc[2]);
         stove.heldItem = pot;
         this.draw();
     }

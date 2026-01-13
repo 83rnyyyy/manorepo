@@ -39,7 +39,7 @@ export class Station {
         this.active = false;
         this.progress = 0;
     }
-    tick(dt, controller, playerWorldPos, ctx, player, three, showPrompt) {
+    tick(dt, controller, playerWorldPos, ctx, player, three) {
         const inside = this.containsPoint(playerWorldPos);
         const holding = controller.getButtonState(this.interactKey);
         if (!inside || !holding) {

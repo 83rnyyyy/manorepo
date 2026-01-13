@@ -41,7 +41,7 @@ export class Fridge extends Station {
     tick(dt, controller, playerWorldPos, ctx, player, three) {
         this.player = player;
         const inside = this.containsPoint(playerWorldPos);
-        const holdingItem = player.hasHeldItem();
+        const holdingItem = player.getHeldItem() !== null;
         // hide prompt when holding item near fridge OR when menu open
         this.suppressPrompt = (inside && holdingItem) || this.menu.isOpen();
         // if menu is open, don't run station cancel/progress logic
@@ -53,7 +53,7 @@ export class Fridge extends Station {
             return;
         }
         // normal station behaviour (progress bar -> onComplete)
-        super.tick(dt, controller, playerWorldPos, ctx, player, three, true);
+        super.tick(dt, controller, playerWorldPos, ctx, player, three);
     }
     prompt() {
         if (this.suppressPrompt)

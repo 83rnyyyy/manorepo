@@ -13,7 +13,6 @@ export class Plates extends Station {
         return "Hold E to Grab Plates";
     }
     onBegin(_ctx) {
-        // optional: start animation/sfx
     }
     takePlate() {
         const plate = this.currentItems.pop() ?? null;
@@ -27,7 +26,6 @@ export class Plates extends Station {
             player.pickup(this.takePlate());
         }
         this.plates--;
-        // TODO: convert ingredient -> chopped ingredient
     }
 }
 //# sourceMappingURL=plates.js.map
