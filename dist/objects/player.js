@@ -9,14 +9,16 @@ export class Player {
     object;
     moveSpeed = 6;
     collider;
+    capsuleRadius = 0.35;
+    capsuleHeight = 1.3;
+    groundY = 0;
     animator;
     modelYawOffset = 0; // try Math.PI, Math.PI/2, -Math.PI/2 if needed
     held = null;
     holdSocket = new THREE.Object3D();
     actionName = null;
     actionTimeLeft = 0;
-    // optional smoothing
-    snapTurn = false; // true = instant, false = smooth
+    // true = instant, false = smooth
     turnSpeed = 18; // rad/sec if snapTurn=false
     constructor(object, controller, bounds, world, animator) {
         this.controller = controller;
@@ -29,6 +31,7 @@ export class Player {
         this.controller.addButton("KeyA");
         this.controller.addButton("KeyS");
         this.controller.addButton("KeyD");
+        this.controller.addButton("KeyQ");
         // create capsule at current player position
         const p = this.object.position.clone();
         const radius = 0.35;
@@ -113,6 +116,25 @@ export class Player {
         const t = Math.min(1, this.turnSpeed * dt);
         this.object.rotation.y = cur + delta * t;
     }
+    throwHeld(scene, throwSpeed = 8, upSpeed = 3) {
+        if (!this.held)
+            return null;
+        const item = this.held;
+        this.held = null;
+        // detach from socket -> world
+        item.object.removeFromParent();
+        scene.add(item.object);
+        // spawn in front of player
+        const p = this.getWorldPos(new THREE.Vector3());
+        const yaw = this.object.rotation.y;
+        const forward = new THREE.Vector3(Math.sin(yaw), 0, Math.cos(yaw)).normalize();
+        item.object.position.copy(p).add(new THREE.Vector3(0, 1.2, 0)).addScaledVector(forward, 0.8);
+        item.object.rotation.set(0, yaw, 0);
+        // initial velocity
+        const vel = forward.multiplyScalar(throwSpeed);
+        vel.y = upSpeed;
+        return { item, vel };
+    }
     update(dt) {
         const ix = (this.controller.getButtonState("KeyD") ? 1 : 0) + (this.controller.getButtonState("KeyA") ? -1 : 0);
         const iz = (this.controller.getButtonState("KeyS") ? 1 : 0) + (this.controller.getButtonState("KeyW") ? -1 : 0);
@@ -134,13 +156,12 @@ export class Player {
             return;
         }
         this.face8Dir(ix, iz, dt);
-        // desired movement this frame
         const move = new THREE.Vector3(ix, 0, iz);
         if (move.lengthSq() > 0)
             move.normalize().multiplyScalar(this.moveSpeed * dt);
         const EPS = 1e-4;
         const MAX_ITERS = 1;
-        const PUSH_FACTOR = 1;
+        const PUSH_FACTOR = 0.5;
         let remaining = move.clone();
         for (let iter = 0; iter < MAX_ITERS && remaining.lengthSq() > 0; iter++) {
             this.collider.translate(remaining);
@@ -159,7 +180,10 @@ export class Player {
         if (dx !== 0 || dz !== 0)
             this.collider.translate(new THREE.Vector3(dx, 0, dz));
         this.object.position.copy(this.collider.start);
-        this.object.position.y -= this.collider.radius;
+        this.object.position.y = this.collider.radius;
+        this.collider.start.y = this.groundY + this.capsuleRadius;
+        this.collider.end.y = this.groundY + this.capsuleRadius + this.capsuleHeight;
+        this.object.position.set(this.collider.start.x, this.groundY, this.collider.start.z);
         if (!this.actionName) {
             if (!moving) {
                 if (this.held)

@@ -1,6 +1,7 @@
 // objects/stations/cuttingBoard.ts
 import * as THREE from "three";
 import { Station } from "./station.js";
+import { PlateItem } from "../recipes/plate.js";
 export class Counter extends Station {
     hasItem = false;
     heldItem;
@@ -8,7 +9,7 @@ export class Counter extends Station {
     prompt(player) {
         if (!this.hasItem)
             return "Hold E to Place on Counter";
-        else if (player.getHeldItem() && this.heldItem?.type === 'plate')
+        else if (player.getHeldItem())
             return "Add Ingredient to Plate";
         else
             return `Hold E To Pickup ${this.heldItem?.type} From Counter`;
@@ -21,9 +22,9 @@ export class Counter extends Station {
         ctx.player.getWorldPosition(p);
         console.log("Chop complete at:", p.x.toFixed(2), p.y.toFixed(2), p.z.toFixed(2));
         if (this.hasItem) {
-            if (player.getHeldItem() && this.heldItem?.type === 'plate') {
+            if (this.heldItem instanceof PlateItem && player.getHeldItem()) {
                 const ingredient = player.removeHeldItem();
-                this.heldItem.addIngredient(ingredient);
+                (this.heldItem).addIngredient(ingredient);
             }
             else {
                 player.pickup(this.heldItem);

@@ -2,9 +2,8 @@ import { Station } from "./station.js";
 import { FridgeMenu } from "../../utilities/fridgeMenu.js";
 import { RiceItem } from "../recipes/rice.js";
 import { SalmonFishItem } from "../recipes/salmonFish.js";
+import AssetManager from "../../utilities/assetManager.js";
 export class Fridge extends Station {
-    ricePrefab;
-    salmonPrefab;
     suppressPrompt = false;
     menu;
     player = null;
@@ -13,10 +12,8 @@ export class Fridge extends Station {
         { id: "Rice", iconSrc: "/public/riceIcon.png" },
         { id: "Salmon", iconSrc: "/public/SalmonIcon.png" },
     ];
-    constructor(anchor, ricePrefab, salmonPrefab, three) {
+    constructor(anchor, three) {
         super(anchor);
-        this.ricePrefab = ricePrefab;
-        this.salmonPrefab = salmonPrefab;
         this.three = three;
         this.menu = new FridgeMenu(this.items);
         this.menu.setOnClose((picked) => {
@@ -25,12 +22,12 @@ export class Fridge extends Station {
                 this.player.movementDisabled = false;
             if (picked && this.player) {
                 if (picked === "Rice") {
-                    const obj = this.ricePrefab.clone(true);
+                    const obj = AssetManager.create("Rice");
                     const item = new RiceItem(this.three, obj, 0, 0, 0);
                     this.player.pickup(item);
                 }
                 if (picked === "Salmon") {
-                    const obj = this.salmonPrefab.clone(true);
+                    const obj = AssetManager.create('Salmon Fish');
                     const item = new SalmonFishItem(this.three, obj, 0, 0, 0);
                     this.player.pickup(item);
                 }
@@ -60,8 +57,6 @@ export class Fridge extends Station {
             return "";
         return "Press E to open fridge";
     }
-    onBegin(_ctx) { }
-    useAnimation(_three, _player) { }
     onComplete(_ctx, player, _three) {
         this.suppressPrompt = true;
         this.player = player;

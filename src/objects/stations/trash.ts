@@ -1,7 +1,7 @@
 // objects/stations/trash.ts (optional but common)
 import * as THREE from "three";
 import { Station} from "./station.js";
-import { StationContext } from "../types.js";
+
 
 import { Player } from "../player.js";
 import { PlateItem } from "../recipes/plate.js";
@@ -12,17 +12,15 @@ export class Trash extends Station {
     return "Hold E to throw away";
   }
 
-  protected onComplete(ctx: StationContext, player: Player): void {
-    const p = new THREE.Vector3();
-    ctx.player.getWorldPosition(p);
-    console.log("Trash complete at:", p.x.toFixed(2), p.y.toFixed(2), p.z.toFixed(2));
+  protected onComplete( player: Player): void {
+    
     if(player.getHeldItem()){
       const heldItem = player.getHeldItem();
-      if(heldItem!.type === 'plate'){
-        (heldItem as PlateItem).clearIngredients();
+      if(heldItem instanceof PlateItem){
+        (heldItem).clearIngredients();
       }
-      else if(heldItem?.type == "pot"){
-        const pot = heldItem as PotItem;
+      else if(heldItem instanceof PotItem){
+        const pot = heldItem;
         pot.swapToEmpty();
       }
       else{
@@ -30,11 +28,9 @@ export class Trash extends Station {
         
       }
     }
-    // TODO: delete item in player's hands
+    
   }
 
   
-  protected override onBegin(_ctx: StationContext): void {
-      
-  }
+  
 }

@@ -2,9 +2,10 @@
 import * as THREE from "three";
 import { HoldableItem } from "../../utilities/holdableItem.js";
 import { ThreeRenderer } from "../../core/render.js";
+import { Cookware } from "../../utilities/cookware.js";
 
-export class PlateItem extends HoldableItem{
-	public readonly type = "plate" as const;
+export class PlateItem extends Cookware{
+	public readonly name = "plate" as const;
 	public heldIngredients: HoldableItem[] = [];
 	private ingredientSocket = new THREE.Object3D();
 	private slots = [
@@ -48,4 +49,10 @@ export class PlateItem extends HoldableItem{
 		item.object.rotation.set(0, 0, 0);
 		this.heldIngredients.push(item);
 	}
+
+	// public checkForRecipe(){
+	// 	for(let i = 0; i < this.heldIngredients.length; i++){
+	// 		if()
+	// 	}
+	// }
 }

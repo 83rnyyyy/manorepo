@@ -6,7 +6,16 @@ export abstract class worldObject{
         this.renderer.scene.add(this.object);
     }
 
-    public update(){
-        
+    public deleteObject() {
+        this.object.removeFromParent(); // removes from scene graph
+
+        // optional: free GPU memory (only if you won't reuse this object)
+        this.object.traverse((o: any) => {
+            o.geometry?.dispose?.();
+            const m = o.material;
+            if (Array.isArray(m)) m.forEach((x) => x.dispose?.());
+            else m?.dispose?.();
+        });
     }
+
 }

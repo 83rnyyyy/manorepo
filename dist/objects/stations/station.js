@@ -49,7 +49,6 @@ export class Station {
         if (!this.active) {
             this.active = true;
             this.useAnimation(three, player);
-            this.onBegin(ctx);
         }
         this.progress += dt;
         if (this.progress >= this.holdSeconds) {

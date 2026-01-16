@@ -8,6 +8,7 @@ import { Controller } from "../../core/controller.js";
 import { FridgeItem, FridgeMenu } from "../../utilities/fridgeMenu.js";
 import { RiceItem } from "../recipes/rice.js";
 import { SalmonFishItem } from "../recipes/salmonFish.js";
+import AssetManager from "../../utilities/assetManager.js";
 
 export class Fridge extends Station {
   private suppressPrompt = false;
@@ -23,8 +24,6 @@ export class Fridge extends Station {
 
   constructor(
     anchor: THREE.Object3D,
-    private ricePrefab: THREE.Object3D,
-    private salmonPrefab: THREE.Object3D,
     three: ThreeRenderer
   ) {
     super(anchor);
@@ -38,12 +37,12 @@ export class Fridge extends Station {
 
       if (picked && this.player) {
         if (picked === "Rice") {
-          const obj = this.ricePrefab.clone(true);
+          const obj = AssetManager.create("Rice");
           const item = new RiceItem(this.three, obj, 0, 0, 0);
           this.player.pickup(item);
         }
         if (picked === "Salmon") {
-          const obj = this.salmonPrefab.clone(true);
+          const obj = AssetManager.create('Salmon Fish');
           const item = new SalmonFishItem(this.three, obj, 0,0,0);
           this.player.pickup(item);
         }
@@ -63,14 +62,10 @@ export class Fridge extends Station {
     this.player = player;
 
     const inside = this.containsPoint(playerWorldPos);
-   
-    
     const holdingItem = player.getHeldItem() !== null;
 
     // hide prompt when holding item near fridge OR when menu open
     this.suppressPrompt = (inside && holdingItem) || this.menu.isOpen();
-    
-    
 
     // if menu is open, don't run station cancel/progress logic
     if (this.menu.isOpen()) return;
@@ -90,9 +85,9 @@ export class Fridge extends Station {
     return "Press E to open fridge";
   }
 
-  protected override onBegin(_ctx: StationContext): void {}
+  
 
-  protected override useAnimation(_three: ThreeRenderer, _player: Player): void {}
+  
 
   protected override onComplete(_ctx: StationContext, player: Player, _three: ThreeRenderer): void {
     this.suppressPrompt = true;

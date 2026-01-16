@@ -1,4 +1,3 @@
-// core/game.ts
 import * as THREE from "three";
 import Canvas from "./canvas.js";
 import { ThreeRenderer } from "./render.js";
@@ -14,11 +13,11 @@ import { Stove } from "../objects/stations/stove.js";
 import { Trash } from "../objects/stations/trash.js";
 import { PlayerAnimator } from "../utilities/playerAnimator.js";
 import { Plates } from "../objects/stations/plates.js";
-import { ItemManager } from "../utilities/itemManager.js";
-import { GLTFLoader } from "three/examples/jsm/Addons.js";
 import { PlateItem } from "../objects/recipes/plate.js";
 import { Counter } from "../objects/stations/counter.js";
 import { PotItem } from "../objects/recipes/pot.js";
+import AssetManager from "../utilities/assetManager.js";
+import { Serving } from "../objects/stations/serving.js";
 export class Game {
     three;
     controller;
@@ -26,7 +25,11 @@ export class Game {
     stationManager;
     progressUI = new ProgressBar();
     clock = new THREE.Clock();
+    thrown = [];
+    wasThrowDown = false;
+    wasEDown = false;
     bounds = { minX: 0, maxX: 0, minZ: 0, maxZ: 0 };
+    levels = 0;
     boundsRect;
     boundsBox;
     animator;
@@ -35,15 +38,6 @@ export class Game {
     // ===== station debug drawing =====
     stations = [];
     stationHelpers = [];
-    itemManager = new ItemManager();
-    platePrefab;
-    ricePrefab;
-    salmonFishPrefab;
-    potEmptyPrefab;
-    potFilledUncookedPrefab;
-    potFilledCookedPrefab;
-    panPrefab;
-    testPlates = [];
     constructor() {
         void this.init();
     }
@@ -52,15 +46,12 @@ export class Game {
         this.three = new ThreeRenderer(canvas);
         this.stationManager = new StationManager(this.three);
         this.controller = new Controller();
-        this.controller.addButton("KeyE");
         this.controller.addButton("KeyP");
         const playerObj = await this.three.spawnPlayer("/public/Panda.glb", new THREE.Vector3(0, 0, 0));
         await this.three.addPlayerVariant("knife", "/public/Panda_Knife.glb");
         await this.three.addPlayerVariant("cooking", "/public/Panda_Pan.glb");
         this.animator = new PlayerAnimator(this.three.playerActions);
         this.mapObj = await this.three.loadGLB("/public/test7.glb");
-        this.ricePrefab = await this.loadPrefab("/public/FoodIngredient_Rice.glb");
-        this.salmonFishPrefab = await this.loadPrefab("/public/FoodIngredient_SalmonFish.glb");
         this.createStations();
         this.createStationDebugHelpers();
         this.world.clear();
@@ -72,22 +63,51 @@ export class Game {
         this.three.scene.add(this.boundsBox);
         this.player = new Player(playerObj, this.controller, this.bounds, this.world, this.animator);
         this.clock.start();
-        this.platePrefab = await this.loadPrefab("/public/Environment/glTF/Environment_Plate.gltf");
         const plates = this.stationManager.getByType(Plates);
         for (let i = 0; i < 3; i++) {
-            const clonedPlate = this.platePrefab.clone();
+            const clonedPlate = AssetManager.create('Plate');
             const plate = new PlateItem(this.three, clonedPlate, plates.plateLocations[i][0], plates.plateLocations[i][1], plates.plateLocations[i][2]);
             plates?.currentItems.push(plate);
         }
-        this.potEmptyPrefab = await this.loadPrefab("/public/Environment_Pot_1_Empty.glb");
-        this.potFilledCookedPrefab = await this.loadPrefab("/public/Environment_Pot_1_Filled.glb");
-        this.potFilledUncookedPrefab = await this.loadPrefab("/public/Environment/glTF/Environment_Pot_1_Filled.gltf");
         const stove = this.stationManager.getByType(Stove);
-        const pot = new PotItem(this.three, this.potEmptyPrefab, this.potFilledCookedPrefab, this.potFilledUncookedPrefab, stove.cookwareLoc[0], stove.cookwareLoc[1], stove.cookwareLoc[2]);
+        const pot = new PotItem(this.three, stove.cookwareLoc[0], stove.cookwareLoc[1], stove.cookwareLoc[2]);
         stove.heldItem = pot;
         this.draw();
     }
+    tryPickupThrown() {
+        if (this.player.getHeldItem())
+            return false;
+        const p = this.player.getWorldPos(new THREE.Vector3());
+        let bestI = -1;
+        let bestD = Infinity;
+        for (let i = 0; i < this.thrown.length; i++) {
+            const t = this.thrown[i];
+            const ip = t.item.object.getWorldPosition(new THREE.Vector3());
+            const d = ip.distanceTo(p);
+            // use item pickupRadius if you want; otherwise tune this
+            const r = t.item.pickupRadius ?? 0.9;
+            if (d <= r && d < bestD) {
+                bestD = d;
+                bestI = i;
+            }
+        }
+        if (bestI === -1)
+            return false;
+        const picked = this.thrown.splice(bestI, 1)[0];
+        picked.item.object.removeFromParent(); // safe
+        this.player.pickup(picked.item);
+        return true;
+    }
     update(dt) {
+        const throwDown = this.controller.getButtonState("KeyQ");
+        if (throwDown && !this.wasThrowDown) {
+            const res = this.player.throwHeld(this.three.scene, 9, 3.5);
+            if (res)
+                this.thrown.push({ item: res.item, vel: res.vel, radius: 0.22, sleeping: false });
+        }
+        this.wasThrowDown = throwDown;
+        // NEW: simulate thrown items
+        this.updateThrownItems(dt);
         this.player.update(dt);
         this.three.playerMixer.update(dt);
         // stations
@@ -100,8 +120,19 @@ export class Game {
             console.log("PLAYER WORLD:", world.x.toFixed(2), world.y.toFixed(2), world.z.toFixed(2), "| LOCAL (use for anchors):", local.x.toFixed(2), local.y.toFixed(2), local.z.toFixed(2));
         }
         const focused = this.stationManager.getFocused();
+        const stationText = focused ? focused.prompt(this.player) : "";
+        // PICKUP (KeyE press) only if no station is actively prompting
+        const eDown = this.controller.getButtonState("KeyE");
+        if (eDown && !this.wasEDown) {
+            const stationHasPrompt = !!(stationText && stationText.trim().length > 0);
+            if (!stationHasPrompt) {
+                this.tryPickupThrown();
+            }
+        }
+        this.wasEDown = eDown;
+        // UI (keep your existing logic)
         if (focused) {
-            const text = focused.prompt(this.player);
+            const text = stationText;
             if (text && text.trim().length > 0) {
                 this.progressUI.show(text);
                 this.progressUI.setProgress(focused.getProgress01());
@@ -120,13 +151,6 @@ export class Game {
         this.three.render();
         requestAnimationFrame(this.draw);
     };
-    async loadPrefab(url) {
-        const loader = new GLTFLoader();
-        const gltf = await new Promise((resolve, reject) => {
-            loader.load(url, (g) => resolve(g), undefined, reject);
-        });
-        return gltf.scene;
-    }
     createStations() {
         const sinkAnchor = this.makeAnchor(this.mapObj, "sinkAnchor", new THREE.Vector3(16.66, 0.29, -11.81));
         const boardAnchor = this.makeAnchor(this.mapObj, "boardAnchor", new THREE.Vector3(11, 1, -4.59));
@@ -140,6 +164,7 @@ export class Game {
         const counterAnchor4 = this.makeAnchor(this.mapObj, "sinkAnchor1", new THREE.Vector3(17.02, 0.61, -2.69));
         const counterAnchor5 = this.makeAnchor(this.mapObj, "sinkAnchor1", new THREE.Vector3(20.23, 0.61, -3.27));
         const counterAnchor6 = this.makeAnchor(this.mapObj, "sinkAnchor1", new THREE.Vector3(14.03, 0.61, -11.89));
+        const servingAnchor = this.makeAnchor(this.mapObj, "servingAnchor", new THREE.Vector3(16, 0.47, 0.77));
         const sink = new Sink(sinkAnchor);
         sink.halfX = 0.6;
         sink.halfY = 1.0;
@@ -158,7 +183,7 @@ export class Game {
         stove.halfZ = 0.7;
         stove.holdSeconds = 1.5;
         this.stationManager.add(stove);
-        const fridge = new Fridge(fridgeAnchor, this.ricePrefab, this.salmonFishPrefab, this.three);
+        const fridge = new Fridge(fridgeAnchor, this.three);
         fridge.halfX = 0.7;
         fridge.halfY = 1.0;
         fridge.halfZ = 0.7;
@@ -209,8 +234,13 @@ export class Game {
         counter6.halfZ = 0.6;
         counter6.rotation = Math.PI / 2;
         this.stationManager.add(counter6);
+        const serving = new Serving(servingAnchor);
+        serving.halfX = 6.5;
+        serving.halfY = 1;
+        serving.halfZ = 2;
+        this.stationManager.add(serving);
         // keep refs so we can draw/update helpers
-        this.stations = [sink, board, stove, fridge, trash, plates, counter1, counter2, counter3, counter4, counter5, counter6];
+        this.stations = [sink, board, stove, fridge, trash, plates, counter1, counter2, counter3, counter4, counter5, counter6, serving];
     }
     createStationDebugHelpers() {
         // remove old if any
@@ -232,7 +262,6 @@ export class Game {
     }
     makeAnchor(mapRoot, name, localPos) {
         const a = new THREE.Object3D();
-        a.name = name;
         a.position.copy(localPos);
         mapRoot.add(a);
         return a;
@@ -264,7 +293,47 @@ export class Game {
         lines.position.copy(box3.getCenter(new THREE.Vector3()));
         return lines;
     }
-    drawObject(objects) {
+    updateThrownItems(dt) {
+        const GRAVITY = -20;
+        const EPS = 1e-3;
+        const GROUND_NORMAL_Y = 0.55; // bigger = stricter "ground" check
+        // substep to avoid missing the ground on big dt
+        const MAX_STEP = 1 / 120;
+        const steps = Math.max(1, Math.ceil(dt / MAX_STEP));
+        const h = dt / steps;
+        for (let i = this.thrown.length - 1; i >= 0; i--) {
+            const t = this.thrown[i];
+            if (t.item.object.position.y < -50) {
+                this.thrown.splice(i, 1);
+                continue;
+            }
+            if (t.sleeping)
+                continue;
+            for (let s = 0; s < steps && !t.sleeping; s++) {
+                // integrate
+                t.vel.y += GRAVITY * h;
+                t.item.object.position.addScaledVector(t.vel, h);
+                // collide
+                const sphere = new THREE.Sphere(t.item.object.position, t.radius);
+                const hit = this.world.sphereIntersect(sphere);
+                if (hit) {
+                    // push out so it's not stuck inside geometry
+                    t.item.object.position.addScaledVector(hit.normal, hit.depth + EPS);
+                    // if it's "ground", instantly stop forever
+                    if (hit.normal.y >= GROUND_NORMAL_Y) {
+                        t.vel.set(0, 0, 0);
+                        t.sleeping = true;
+                        break;
+                    }
+                    else {
+                        // otherwise just stop moving into the surface (prevents phasing)
+                        const vn = t.vel.dot(hit.normal);
+                        if (vn < 0)
+                            t.vel.addScaledVector(hit.normal, -vn);
+                    }
+                }
+            }
+        }
     }
 }
 //# sourceMappingURL=game.js.map

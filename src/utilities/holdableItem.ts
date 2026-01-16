@@ -4,9 +4,11 @@ import { ThreeRenderer } from "../core/render.js";
 import { worldObject } from "../objects/recipes/worldObject.js";
 
 
-export type ItemType = "plate" | "pan" | "Rice" | "SalmonFish" | "ingredient" | "chopped_ingredient" | "pot";
+export type ItemType = "ingredient" | "cookware";
+export type ItemName = "plate" | "pan" | "Rice" | "salmonFish" | "choppedSalmon" | "pot";
 
 export abstract class HoldableItem extends worldObject{
+  public abstract readonly name: ItemName;
   public abstract readonly type: ItemType;
 
   // pickup interaction radius (world distance)

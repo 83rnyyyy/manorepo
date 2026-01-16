@@ -1,6 +1,8 @@
 // objects/stations/trash.ts (optional but common)
 import * as THREE from "three";
 import { Station } from "./station.js";
+import { PlateItem } from "../recipes/plate.js";
+import { PotItem } from "../recipes/pot.js";
 export class Trash extends Station {
     prompt() {
         return "Hold E to throw away";
@@ -11,10 +13,10 @@ export class Trash extends Station {
         console.log("Trash complete at:", p.x.toFixed(2), p.y.toFixed(2), p.z.toFixed(2));
         if (player.getHeldItem()) {
             const heldItem = player.getHeldItem();
-            if (heldItem.type === 'plate') {
-                heldItem.clearIngredients();
+            if (heldItem instanceof PlateItem) {
+                (heldItem).clearIngredients();
             }
-            else if (heldItem?.type == "pot") {
+            else if (heldItem instanceof PotItem) {
                 const pot = heldItem;
                 pot.swapToEmpty();
             }
@@ -23,8 +25,6 @@ export class Trash extends Station {
             }
         }
         // TODO: delete item in player's hands
-    }
-    onBegin(_ctx) {
     }
 }
 //# sourceMappingURL=trash.js.map

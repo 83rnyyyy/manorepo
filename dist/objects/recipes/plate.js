@@ -1,8 +1,8 @@
 // objects/items/plateItem.ts
 import * as THREE from "three";
-import { HoldableItem } from "../../utilities/holdableItem.js";
-export class PlateItem extends HoldableItem {
-    type = "plate";
+import { Cookware } from "../../utilities/cookware.js";
+export class PlateItem extends Cookware {
+    name = "plate";
     heldIngredients = [];
     ingredientSocket = new THREE.Object3D();
     slots = [

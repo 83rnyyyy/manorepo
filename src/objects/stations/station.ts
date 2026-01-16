@@ -74,7 +74,7 @@ export abstract class Station {
     if (!this.active) {
       this.active = true;
       this.useAnimation(three, player);
-      this.onBegin(ctx);
+      
     }
 
     this.progress += dt;
@@ -88,7 +88,7 @@ export abstract class Station {
 
   public abstract prompt(player?:Player): string;
 
-  protected abstract onBegin(_ctx: StationContext): void
+  
   protected onCancel(three:ThreeRenderer, player:Player):void {}
   protected useAnimation(three:ThreeRenderer, player:Player):void {}
   protected abstract onComplete(ctx: StationContext, player:Player, three:ThreeRenderer): void;

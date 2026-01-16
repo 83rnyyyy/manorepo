@@ -1,23 +1,22 @@
 // objects/items/potItem.ts
 import * as THREE from "three";
-import { HoldableItem } from "../../utilities/holdableItem.js";
-export class PotItem extends HoldableItem {
-    type = "pot";
-    emptyModel;
-    filledUncookedModel;
-    filledCookedModel;
+import { Cookware } from "../../utilities/cookware.js";
+import AssetManager from "../../utilities/assetManager.js";
+export class PotItem extends Cookware {
+    name = "pot";
+    emptyModel = AssetManager.create("Empty Pot");
+    filledCookedModel = AssetManager.create("Cooked Filled Pot");
+    filledUncookedModel = AssetManager.create('Uncooked Filled Pot');
     empty = 0;
     uncooked = 1;
     cooked = 2;
+    itemInPot = null;
     potState = this.empty;
-    constructor(renderer, emptyModel, filledCookedModel, filledUncookedModel, x, y, z) {
+    constructor(renderer, x, y, z) {
         // IMPORTANT: stable root object that never changes
         const root = new THREE.Group();
         root.name = "PotRoot";
         super(renderer, root, x, y, z);
-        this.emptyModel = emptyModel;
-        this.filledCookedModel = filledCookedModel;
-        this.filledUncookedModel = filledUncookedModel;
         // attach both to the root, toggle visibility
         this.object.add(this.emptyModel);
         this.object.add(this.filledUncookedModel);
@@ -36,7 +35,6 @@ export class PotItem extends HoldableItem {
             this.filledUncookedModel.visible = true;
         }
         else {
-            console.log("asdas");
             this.emptyModel.visible = false;
             this.filledCookedModel.visible = true;
             this.filledUncookedModel.visible = false;

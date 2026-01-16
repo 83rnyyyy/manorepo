@@ -1,0 +1,1 @@
+{"version":3,"file":"serving.js","sourceRoot":"","sources":["../../../src/objects/stations/serving.ts"],"names":[],"mappings":"AAGA,OAAO,EAAE,OAAO,EAAE,MAAM,cAAc,CAAC;AAEvC,MAAM,OAAO,OAAQ,SAAQ,OAAO;IAChB,MAAM,CAAC,MAAe;QAClC,IAAG,MAAM,EAAE,WAAW,EAAE,EAAC,CAAC;QAE1B,CAAC;QACD,OAAO,EAAE,CAAA;IAEb,CAAC;IAEkB,UAAU,CAAC,GAAmB,EAAE,MAAc,EAAE,KAAoB;IAEvF,CAAC;CAGJ"}
