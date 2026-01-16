@@ -2,7 +2,6 @@
 import * as THREE from "three";
 import { Controller } from "../../core/controller.js";
 import { Station} from "./station.js";
-import { StationContext } from "../types.js";
 import { ThreeRenderer } from "../../core/render.js";
 import { Player } from "../player.js";
 
@@ -43,8 +42,8 @@ export class StationManager {
       this.focused = best;
 
       if (this.focused) {
-        const ctx: StationContext = { player: playerObj };
-        this.focused.tick(dt, controller, p, ctx, player, this.three);
+       
+        this.focused.tick(dt, controller, p, player, this.three);
       }
 }
 

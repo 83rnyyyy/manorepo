@@ -1,7 +1,6 @@
 // objects/stations/station.ts
 import * as THREE from "three";
 import { Controller } from "../../core/controller.js";
-import { StationContext } from "../types.js";
 import { Player } from "../player.js";
 import { ThreeRenderer } from "../../core/render.js";
 
@@ -57,7 +56,7 @@ export abstract class Station {
     dt: number,
     controller: Controller,
     playerWorldPos: THREE.Vector3,
-    ctx: StationContext,
+    
     player: Player,
     three:ThreeRenderer,
     
@@ -82,7 +81,7 @@ export abstract class Station {
     if (this.progress >= this.holdSeconds) {
       this.progress = 0;
       this.active = false;
-      this.onComplete(ctx, player, three);
+      this.onComplete(player, three);
     }
   }
 
@@ -91,5 +90,5 @@ export abstract class Station {
   
   protected onCancel(three:ThreeRenderer, player:Player):void {}
   protected useAnimation(three:ThreeRenderer, player:Player):void {}
-  protected abstract onComplete(ctx: StationContext, player:Player, three:ThreeRenderer): void;
+  protected abstract onComplete(player:Player, three:ThreeRenderer): void;
 }

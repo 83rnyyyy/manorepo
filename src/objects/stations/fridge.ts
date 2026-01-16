@@ -1,7 +1,7 @@
 // objects/stations/fridge.ts
 import * as THREE from "three";
 import { Station } from "./station.js";
-import { StationContext } from "../types.js";
+
 import { ThreeRenderer } from "../../core/render.js";
 import { Player } from "../player.js";
 import { Controller } from "../../core/controller.js";
@@ -55,7 +55,7 @@ export class Fridge extends Station {
     dt: number,
     controller: Controller,
     playerWorldPos: THREE.Vector3,
-    ctx: StationContext,
+   
     player: Player,
     three: ThreeRenderer
   ) {
@@ -77,7 +77,7 @@ export class Fridge extends Station {
     }
 
     // normal station behaviour (progress bar -> onComplete)
-    super.tick(dt, controller, playerWorldPos, ctx, player, three);
+    super.tick(dt, controller, playerWorldPos, player, three);
   }
 
   public prompt(): string {
@@ -89,7 +89,7 @@ export class Fridge extends Station {
 
   
 
-  protected override onComplete(_ctx: StationContext, player: Player, _three: ThreeRenderer): void {
+  protected override onComplete( player: Player, _three: ThreeRenderer): void {
     this.suppressPrompt = true;
     this.player = player;
 
