@@ -46,6 +46,7 @@ export class CuttingBoard extends Station {
         else if (playerItem && playerItem.type !== 'cookware') {
             this.heldItem = player.placeOn(this.anchor, new THREE.Vector3(0, 1, 0), this.rotation);
         }
+        player.stopAction();
     }
     onCancel(three, player) {
         three.switchPlayerVariant("default");
