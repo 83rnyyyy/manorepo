@@ -3,6 +3,10 @@ import { FridgeMenu } from "../../utilities/fridgeMenu.js";
 import { RiceItem } from "../recipes/rice.js";
 import { SalmonFishItem } from "../recipes/salmonFish.js";
 import AssetManager from "../../utilities/assetManager.js";
+import { OctopusItem } from "../recipes/octopus.js";
+import { SeaweedItem } from "../recipes/seaweed.js";
+import { ClosedSeaUrchinItem } from "../recipes/closedSeaUrchin.js";
+import { CucumberItem } from "../recipes/cucumber.js";
 export class Fridge extends Station {
     suppressPrompt = false;
     menu;
@@ -11,6 +15,10 @@ export class Fridge extends Station {
     items = [
         { id: "Rice", iconSrc: "/public/riceIcon.png" },
         { id: "Salmon", iconSrc: "/public/SalmonIcon.png" },
+        { id: "SeaUrchin", iconSrc: "/public/closedSeaUrchin.jpg" },
+        { id: "Octopus", iconSrc: "/public/octopus.png" },
+        { id: "Seaweed", iconSrc: "/public/seaweed.png" },
+        { id: "Cucumber", iconSrc: "/public/cucumber.png" },
     ];
     constructor(anchor, three) {
         super(anchor);
@@ -26,16 +34,36 @@ export class Fridge extends Station {
                     const item = new RiceItem(this.three, obj, 0, 0, 0);
                     this.player.pickup(item);
                 }
-                if (picked === "Salmon") {
+                else if (picked === "Salmon") {
                     const obj = AssetManager.create('Salmon Fish');
                     const item = new SalmonFishItem(this.three, obj, 0, 0, 0);
+                    this.player.pickup(item);
+                }
+                else if (picked === "Octopus") {
+                    const obj = AssetManager.create('Octopus');
+                    const item = new OctopusItem(this.three, obj, 0, 0, 0);
+                    this.player.pickup(item);
+                }
+                else if (picked == "Seaweed") {
+                    const obj = AssetManager.create('Seaweed');
+                    const item = new SeaweedItem(this.three, obj, 0, 0, 0);
+                    this.player.pickup(item);
+                }
+                else if (picked == "SeaUrchin") {
+                    const obj = AssetManager.create('Closed Sea Urchin');
+                    const item = new ClosedSeaUrchinItem(this.three, obj, 0, 0, 0);
+                    this.player.pickup(item);
+                }
+                else if (picked == "Cucumber") {
+                    const obj = AssetManager.create('Cucumber');
+                    const item = new CucumberItem(this.three, obj, 0, 0, 0);
                     this.player.pickup(item);
                 }
             }
         });
     }
     // capture current player each frame + block prompt/opening when holding
-    tick(dt, controller, playerWorldPos, ctx, player, three) {
+    tick(dt, controller, playerWorldPos, player, three) {
         this.player = player;
         const inside = this.containsPoint(playerWorldPos);
         const holdingItem = player.getHeldItem() !== null;
@@ -50,14 +78,14 @@ export class Fridge extends Station {
             return;
         }
         // normal station behaviour (progress bar -> onComplete)
-        super.tick(dt, controller, playerWorldPos, ctx, player, three);
+        super.tick(dt, controller, playerWorldPos, player, three);
     }
     prompt() {
         if (this.suppressPrompt)
             return "";
         return "Press E to open fridge";
     }
-    onComplete(_ctx, player, _three) {
+    onComplete(player, _three) {
         this.suppressPrompt = true;
         this.player = player;
         player.movementDisabled = true;

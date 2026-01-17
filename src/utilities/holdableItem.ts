@@ -5,7 +5,7 @@ import { worldObject } from "../objects/recipes/worldObject.js";
 
 
 export type ItemType = "ingredient" | "cookware";
-export type ItemName = "plate" | "pan" | "Rice" | "salmonFish" | "choppedSalmon" | "pot";
+export type ItemName = "plate" | "pan" | "Rice" | "salmonFish" | "choppedSalmon" | "pot" |  "closedSeaUrchin" | "openedSeaUrchin" | "seaweed" | "octopus" | "octopusTentacle" | "choppedCucumber" | "cucumber";
 
 export abstract class HoldableItem extends worldObject{
   public abstract readonly name: ItemName;
@@ -26,6 +26,4 @@ export abstract class HoldableItem extends worldObject{
     this.object.position.copy(pos);
   }
 
-  public onPickup() {}
-  public onDrop() {}
 }

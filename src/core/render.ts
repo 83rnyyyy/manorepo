@@ -19,7 +19,7 @@ export class ThreeRenderer {
   public readonly renderer: THREE.WebGLRenderer;
   public readonly controls: OrbitControls;
 
-  // NOTE: "player" is now a stable ROOT container. Your Player can move/rotate this.
+ 
   private player: THREE.Object3D | null = null;
 
   // ===== your existing fields =====
@@ -114,9 +114,7 @@ export class ThreeRenderer {
     Object.assign(this.playerActions, next.actions);
   }
 
-  // ===== unchanged signature =====
-  // NOTE: returns a ROOT container (stable reference) instead of the raw gltf.scene mesh.
-  // Your existing movement/collision will still work; you can still find bones via root.getObjectByName(...)
+ 
   public async spawnPlayer(url: string, pos: THREE.Vector3): Promise<THREE.Object3D> {
     // create root once
     const root = new THREE.Object3D();

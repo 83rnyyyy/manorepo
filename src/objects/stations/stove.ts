@@ -69,9 +69,10 @@ export class Stove extends Station {
 			
 			}
 		else{
-			if(player.getHeldItem() && (player.getHeldItem()?.name != "pot" || player.getHeldItem()?.name != "pan")) return;
-
-			this.heldItem = player.placeOn(this.anchor, new THREE.Vector3(0, 1.5, -1.1), this.rotation);
+			
+			if(player.getHeldItem() && !(player.getHeldItem()?.name === "pot" || player.getHeldItem()?.name === "pan")) return;
+			
+			this.heldItem = player.placeOn(this.anchor, new THREE.Vector3(0, 1.65, -1.1), this.rotation);
 			this.hasItem = true;
 		}
     // TODO: cook item in pan/pot

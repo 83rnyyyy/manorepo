@@ -9,6 +9,11 @@ import { FridgeItem, FridgeMenu } from "../../utilities/fridgeMenu.js";
 import { RiceItem } from "../recipes/rice.js";
 import { SalmonFishItem } from "../recipes/salmonFish.js";
 import AssetManager from "../../utilities/assetManager.js";
+import { OctopusItem } from "../recipes/octopus.js";
+import { SeaweedItem } from "../recipes/seaweed.js";
+import { ClosedSeaUrchinItem } from "../recipes/closedSeaUrchin.js";
+import { ChoppedCucumberItem } from "../recipes/choppedCucumber.js";
+import { CucumberItem } from "../recipes/cucumber.js";
 
 export class Fridge extends Station {
   private suppressPrompt = false;
@@ -20,6 +25,11 @@ export class Fridge extends Station {
   private items: FridgeItem[] = [
     { id: "Rice", iconSrc: "/public/riceIcon.png" },
     { id: "Salmon", iconSrc: "/public/SalmonIcon.png" },
+    {id: "SeaUrchin", iconSrc: "/public/closedSeaUrchin.jpg"},
+    {id: "Octopus", iconSrc: "/public/octopus.png"},
+    {id: "Seaweed", iconSrc: "/public/seaweed.png"},
+    {id: "Cucumber", iconSrc: "/public/cucumber.png"},
+
   ];
 
   constructor(
@@ -41,11 +51,32 @@ export class Fridge extends Station {
           const item = new RiceItem(this.three, obj, 0, 0, 0);
           this.player.pickup(item);
         }
-        if (picked === "Salmon") {
+        else if (picked === "Salmon") {
           const obj = AssetManager.create('Salmon Fish');
           const item = new SalmonFishItem(this.three, obj, 0,0,0);
           this.player.pickup(item);
         }
+        else if(picked === "Octopus"){
+            const obj = AssetManager.create('Octopus');
+            const item = new OctopusItem(this.three, obj, 0,0,0);
+            this.player.pickup(item);
+        }
+        else if(picked == "Seaweed"){
+            const obj = AssetManager.create('Seaweed');
+            const item = new SeaweedItem(this.three, obj, 0,0,0);
+            this.player.pickup(item);
+        }
+        else if(picked == "SeaUrchin"){
+            const obj = AssetManager.create('Closed Sea Urchin');
+            const item = new ClosedSeaUrchinItem(this.three, obj, 0,0,0);
+            this.player.pickup(item);
+        }
+        else if(picked == "Cucumber"){
+          const obj = AssetManager.create('Cucumber');
+          const item = new CucumberItem(this.three,obj,0,0,0);
+          this.player.pickup(item);
+        }
+      
       }
     });
   }

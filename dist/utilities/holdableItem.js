@@ -13,7 +13,5 @@ export class HoldableItem extends worldObject {
     setWorldPos(pos) {
         this.object.position.copy(pos);
     }
-    onPickup() { }
-    onDrop() { }
 }
 //# sourceMappingURL=holdableItem.js.map

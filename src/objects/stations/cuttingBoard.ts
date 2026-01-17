@@ -1,7 +1,7 @@
 // objects/stations/cuttingBoard.ts
 import * as THREE from "three";
 import { Station} from "./station.js";
-import { StationContext } from "../types.js";
+
 import { ThreeRenderer } from "../../core/render.js";
 import { Player } from "../player.js";
 import { HoldableItem } from "../../utilities/holdableItem.js";
@@ -20,9 +20,7 @@ export class CuttingBoard extends Station {
    
   }
 
-  protected onBegin(_ctx: StationContext) {      
   
-  }
   protected override useAnimation(three: ThreeRenderer, player:Player): void {
       if(this.heldItem){
         if(this.heldItem.isChoppable){
@@ -33,10 +31,8 @@ export class CuttingBoard extends Station {
       }
         
   }
-  protected onComplete(ctx: StationContext,player:Player, three:ThreeRenderer): void {
-    const p = new THREE.Vector3();
-    ctx.player.getWorldPosition(p);
-    console.log("Chop complete at:", p.x.toFixed(2), p.y.toFixed(2), p.z.toFixed(2));
+  protected onComplete(player:Player, three:ThreeRenderer): void {
+   
     three.switchPlayerVariant("default");
     const playerItem = player.getHeldItem();
     if(this.heldItem){

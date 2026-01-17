@@ -1,8 +1,8 @@
 import { Food } from "../../utilities/food.js";
 export class PanItem extends Food {
     name = "pan";
-    itemInPot = null;
-    potState;
+    itemInPan = null;
+    panState;
     constructor(renderer, object, x, y, z) {
         super(renderer, object, x, y, z);
     }

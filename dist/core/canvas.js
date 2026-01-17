@@ -2,7 +2,6 @@
 export default class Canvas {
     static canvas;
     static setup() {
-        // use existing canvas if present, otherwise create one
         let c = document.querySelector("canvas");
         if (!c) {
             c = document.createElement("canvas");

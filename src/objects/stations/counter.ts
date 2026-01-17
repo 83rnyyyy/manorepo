@@ -6,19 +6,34 @@ import { HoldableItem } from "../../utilities/holdableItem.js";
 import { Player } from "../player.js";
 import { PlateItem } from "../recipes/plate.js";
 import { Food } from "../../utilities/food.js";
+import { Controller } from "../../core/controller.js";
+import { ThreeRenderer } from "../../core/render.js";
 
 export class Counter extends Station {
   	public hasItem = false;
   	public heldItem: Food | HoldableItem | null;
   	public isPlate: boolean = false;
-  	public prompt(player: Player): string {
-    if(!this.hasItem) return "Hold E to Place on Counter";
-    else if(player.getHeldItem()) return "Add Ingredient to Plate"; 
-    else return `Hold E To Pickup ${this.heldItem?.type} From Counter`;
+    private promptText: string = '';
+  	public prompt(): string {
+      return this.promptText;
     
+    }
+
+  public override tick(dt: number, controller: Controller, playerWorldPos: THREE.Vector3, player: Player, three: ThreeRenderer): void {
+    if(!this.hasItem){
+      if(player.getHeldItem()){
+        this.promptText = "Hold E to Place on Counter";
+      }
+      else{
+        this.promptText =  "";
+        return;
+      }
+    }  
+    else if(player.getHeldItem()) this.promptText =  "Add Ingredient to Plate"; 
+    else this.promptText =  `Hold E To Pickup ${this.heldItem?.type} From Counter`;
+    super.tick(dt,controller,playerWorldPos, player, three);
   }
 
-  
 
   protected onComplete(player: Player): void {
     
@@ -36,7 +51,7 @@ export class Counter extends Station {
     }
     else{
 		if(!player.getHeldItem()) return;
-      this.heldItem = player.placeOn(this.anchor, new THREE.Vector3(0.85, 1.35, 0), this.rotation);
+      this.heldItem = player.placeOn(this.anchor, new THREE.Vector3(0.8, 1.35, 0), this.rotation);
       this.heldItem?.type
       this.hasItem = true;
     }

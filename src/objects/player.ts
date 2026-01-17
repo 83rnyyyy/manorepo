@@ -22,10 +22,10 @@ export class Player {
   	private holdSocket = new THREE.Object3D();
 	private actionName: PlayerAnimState | null = null;
 	private actionTimeLeft = 0;
-	
+
   
      // true = instant, false = smooth
-  	public turnSpeed = 18;       // rad/sec if snapTurn=false
+  	private turnSpeed = 18;       // rad/sec if snapTurn=false
   
 	constructor(
 		object: THREE.Object3D,
@@ -91,7 +91,7 @@ export class Player {
 	}
 	public bindHoldSocket(): void{
 
-      this.object.add(this.holdSocket); // fallback
+      this.object.add(this.holdSocket); 
       this.holdSocket.position.set(0.05, 1.75, 1);
 
 
@@ -110,7 +110,7 @@ export class Player {
     // optional: scale for held look
     item.object.scale.setScalar(1);
 
-    item.onPickup();
+    
     
   }
 
@@ -127,7 +127,7 @@ export class Player {
 		item.object.position.copy(off);
 		item.object.rotation.set(0, yaw, 0);
 
-		item.onDrop();
+		
 		
 		return item;
 	}

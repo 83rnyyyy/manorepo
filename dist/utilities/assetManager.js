@@ -20,6 +20,14 @@ export default class AssetManager {
             this.addPrefab('Empty Pot', "/public/Environment_Pot_1_Empty.glb"),
             this.addPrefab('Cooked Filled Pot', "/public/Environment_Pot_1_Filled.glb"),
             this.addPrefab('Uncooked Filled Pot', "/public/Environment/glTF/Environment_Pot_1_Filled.gltf"),
+            this.addPrefab('Pan', "/public/Environment_Pan.glb"),
+            this.addPrefab('Octopus', "/public/FoodIngredient_Octopus.glb"),
+            this.addPrefab("Octopus Tentacle", "/public/FoodIngredient_Tentacle.glb"),
+            this.addPrefab("Open Sea Urchin", "/public/Food/glTF/FoodIngredient_SeaUrchinOpen.gltf"),
+            this.addPrefab("Closed Sea Urchin", "/public/Food/glTF/FoodIngredient_SeaUrchin.gltf"),
+            this.addPrefab("Seaweed", "public/Food/glTF/FoodIngredient_Nori.gltf"),
+            this.addPrefab("Cucumber", "public/Food/glTF/FoodIngredient_Cucumber.gltf"),
+            this.addPrefab("Chopped Cucumber", "public/Food/glTF/FoodIngredient_SlicedCucumber.gltf"),
         ]);
     }
     static async addPrefab(key, url) {

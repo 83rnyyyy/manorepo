@@ -15,8 +15,6 @@ export class CuttingBoard extends Station {
             return `Hold E To Place ${player.getHeldItem().name} On Board`;
         return "";
     }
-    onBegin(_ctx) {
-    }
     useAnimation(three, player) {
         if (this.heldItem) {
             if (this.heldItem.isChoppable) {
@@ -25,10 +23,7 @@ export class CuttingBoard extends Station {
             }
         }
     }
-    onComplete(ctx, player, three) {
-        const p = new THREE.Vector3();
-        ctx.player.getWorldPosition(p);
-        console.log("Chop complete at:", p.x.toFixed(2), p.y.toFixed(2), p.z.toFixed(2));
+    onComplete(player, three) {
         three.switchPlayerVariant("default");
         const playerItem = player.getHeldItem();
         if (this.heldItem) {

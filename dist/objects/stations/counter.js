@@ -6,21 +6,27 @@ export class Counter extends Station {
     hasItem = false;
     heldItem;
     isPlate = false;
-    prompt(player) {
-        if (!this.hasItem)
-            return "Hold E to Place on Counter";
+    promptText = '';
+    prompt() {
+        return this.promptText;
+    }
+    tick(dt, controller, playerWorldPos, player, three) {
+        if (!this.hasItem) {
+            if (player.getHeldItem()) {
+                this.promptText = "Hold E to Place on Counter";
+            }
+            else {
+                this.promptText = "";
+                return;
+            }
+        }
         else if (player.getHeldItem())
-            return "Add Ingredient to Plate";
+            this.promptText = "Add Ingredient to Plate";
         else
-            return `Hold E To Pickup ${this.heldItem?.type} From Counter`;
+            this.promptText = `Hold E To Pickup ${this.heldItem?.type} From Counter`;
+        super.tick(dt, controller, playerWorldPos, player, three);
     }
-    onBegin(_ctx) {
-        // optional: start animation/sfx
-    }
-    onComplete(ctx, player) {
-        const p = new THREE.Vector3();
-        ctx.player.getWorldPosition(p);
-        console.log("Chop complete at:", p.x.toFixed(2), p.y.toFixed(2), p.z.toFixed(2));
+    onComplete(player) {
         if (this.hasItem) {
             if (this.heldItem instanceof PlateItem && player.getHeldItem()) {
                 const ingredient = player.removeHeldItem();
@@ -35,7 +41,7 @@ export class Counter extends Station {
         else {
             if (!player.getHeldItem())
                 return;
-            this.heldItem = player.placeOn(this.anchor, new THREE.Vector3(0.85, 1.35, 0), this.rotation);
+            this.heldItem = player.placeOn(this.anchor, new THREE.Vector3(0.8, 1.35, 0), this.rotation);
             this.heldItem?.type;
             this.hasItem = true;
         }

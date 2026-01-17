@@ -76,7 +76,7 @@ export class Player {
         }
     }
     bindHoldSocket() {
-        this.object.add(this.holdSocket); // fallback
+        this.object.add(this.holdSocket);
         this.holdSocket.position.set(0.05, 1.75, 1);
     }
     pickup(item) {
@@ -88,7 +88,6 @@ export class Player {
         item.object.rotation.set(0, 0, 0);
         // optional: scale for held look
         item.object.scale.setScalar(1);
-        item.onPickup();
     }
     // Place item onto an anchor (like a station surface)
     placeOn(anchor, localOffset = new THREE.Vector3(0, 1, 0), yaw = 0) {
@@ -101,7 +100,6 @@ export class Player {
         const off = localOffset.clone().applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw);
         item.object.position.copy(off);
         item.object.rotation.set(0, yaw, 0);
-        item.onDrop();
         return item;
     }
     face8Dir(ix, iz, dt) {

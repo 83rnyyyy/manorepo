@@ -15,19 +15,16 @@ export class Stove extends Station {
             return "Hold E to place Item";
         return "Hold E to cook";
     }
-    onBegin(_ctx) {
-        // optional: start cooking animation/sfx
-    }
-    tick(dt, controller, playerWorldPos, ctx, player, three) {
+    tick(dt, controller, playerWorldPos, player, three) {
         if (this.heldItem) {
             if (this.heldItem.name == "pot" && this.heldItem.potState == this.heldItem.empty) {
                 if (player.getHeldItem() && player.getHeldItem().name != "Rice")
                     return;
             }
         }
-        super.tick(dt, controller, playerWorldPos, ctx, player, three);
+        super.tick(dt, controller, playerWorldPos, player, three);
     }
-    onComplete(ctx, player) {
+    onComplete(player) {
         if (this.hasItem) {
             if (this.heldItem?.name == "pot") {
                 const pot = this.heldItem;
@@ -56,9 +53,9 @@ export class Stove extends Station {
             }
         }
         else {
-            if (player.getHeldItem() && (player.getHeldItem()?.name != "pot" || player.getHeldItem()?.name != "pan"))
+            if (player.getHeldItem() && !(player.getHeldItem()?.name === "pot" || player.getHeldItem()?.name === "pan"))
                 return;
-            this.heldItem = player.placeOn(this.anchor, new THREE.Vector3(0, 1.5, -1.1), this.rotation);
+            this.heldItem = player.placeOn(this.anchor, new THREE.Vector3(0, 1.65, -1.1), this.rotation);
             this.hasItem = true;
         }
         // TODO: cook item in pan/pot

@@ -2,7 +2,7 @@ import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
 
-export type Assets = 'Plate' | 'Pan' | 'Rice' | 'Empty Pot' | 'Salmon Fish' | 'Chopped Salmon' |'Salmon Roll' | 'Uncooked Filled Pot' | 'Cooked Filled Pot';
+export type Assets = 'Cucumber' | 'Chopped Cucumber' |'Plate' | 'Pan' | 'Rice' | 'Empty Pot' | 'Salmon Fish' | 'Chopped Salmon' |'Salmon Roll' | 'Uncooked Filled Pot' | 'Cooked Filled Pot'| 'Octopus' | 'Octopus Tentacle' | 'Open Sea Urchin' | 'Closed Sea Urchin' | 'Seaweed';
 type AssetLibrary = Partial<Record<Assets, THREE.Object3D>>;
 
 export default class AssetManager {
@@ -18,7 +18,7 @@ export default class AssetManager {
     AssetManager.onProgress?.(url, loaded, total);
     AssetManager.manager.onError = (url) => AssetManager.onError?.(url);
   }
-  public static async addAllAssets(){
+  public static async addAllAssets():Promise<void>{
     await Promise.all([
       this.addPrefab("Plate", "/public/Environment/glTF/Environment_Plate.gltf"),
       this.addPrefab("Rice", "/public/FoodIngredient_Rice.glb"),
@@ -28,6 +28,14 @@ export default class AssetManager {
       this.addPrefab('Empty Pot', "/public/Environment_Pot_1_Empty.glb"),
       this.addPrefab('Cooked Filled Pot',"/public/Environment_Pot_1_Filled.glb"),
       this.addPrefab('Uncooked Filled Pot', "/public/Environment/glTF/Environment_Pot_1_Filled.gltf"),
+      this.addPrefab('Pan', "/public/Environment_Pan.glb"),
+      this.addPrefab('Octopus', "/public/FoodIngredient_Octopus.glb"),
+      this.addPrefab("Octopus Tentacle", "/public/FoodIngredient_Tentacle.glb"),
+      this.addPrefab("Open Sea Urchin", "/public/Food/glTF/FoodIngredient_SeaUrchinOpen.gltf"),
+      this.addPrefab("Closed Sea Urchin", "/public/Food/glTF/FoodIngredient_SeaUrchin.gltf"),
+      this.addPrefab("Seaweed", "public/Food/glTF/FoodIngredient_Nori.gltf"),
+      this.addPrefab("Cucumber", "public/Food/glTF/FoodIngredient_Cucumber.gltf"),
+      this.addPrefab("Chopped Cucumber", "public/Food/glTF/FoodIngredient_SlicedCucumber.gltf"),
     ]);
   }
 

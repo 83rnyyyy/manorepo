@@ -10,7 +10,6 @@ export class ThreeRenderer {
     camera;
     renderer;
     controls;
-    // NOTE: "player" is now a stable ROOT container. Your Player can move/rotate this.
     player = null;
     // ===== your existing fields =====
     playerMixer;
@@ -85,9 +84,6 @@ export class ThreeRenderer {
         this.clearActionsObject(this.playerActions);
         Object.assign(this.playerActions, next.actions);
     }
-    // ===== unchanged signature =====
-    // NOTE: returns a ROOT container (stable reference) instead of the raw gltf.scene mesh.
-    // Your existing movement/collision will still work; you can still find bones via root.getObjectByName(...)
     async spawnPlayer(url, pos) {
         // create root once
         const root = new THREE.Object3D();

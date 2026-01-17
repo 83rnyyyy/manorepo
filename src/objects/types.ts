@@ -3,6 +3,12 @@ import * as THREE from "three";
 import { SalmonFishItem } from "./recipes/salmonFish.js";
 import { RiceItem } from "./recipes/rice.js";
 import { ChoppedSalmonItem } from "./recipes/choppedSalmon.js";
+import { TentacleItem } from "./recipes/tentacle.js";
+import { OpenedSeaUrchinItem } from "./recipes/openSeaUrchin.js";
+import { ClosedSeaUrchinItem } from "./recipes/closedSeaUrchin.js";
+import { SeaweedItem } from "./recipes/seaweed.js";
+import { CucumberItem } from "./recipes/cucumber.js";
+import { ChoppedCucumberItem } from "./recipes/choppedCucumber.js";
 
 
 export type Bounds = {
@@ -29,4 +35,4 @@ export type SpawnedPlayer = {
   clips: THREE.AnimationClip[];
 };
 
-export type Foods = SalmonFishItem | RiceItem | ChoppedSalmonItem;
+export type Foods = SalmonFishItem | RiceItem | ChoppedSalmonItem | TentacleItem | OpenedSeaUrchinItem | ClosedSeaUrchinItem | SeaweedItem | CucumberItem | ChoppedCucumberItem;

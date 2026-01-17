@@ -58,7 +58,7 @@ export class Game {
 		this.three = new ThreeRenderer(canvas);
 		this.stationManager = new StationManager(this.three);
 		this.controller = new Controller();
-		this.controller.addButton("KeyP");
+		
 
 		const playerObj = await this.three.spawnPlayer("/public/Panda.glb", new THREE.Vector3(0, 0, 0));
 		await this.three.addPlayerVariant("knife", "/public/Panda_Knife.glb");
@@ -76,8 +76,7 @@ export class Game {
 		this.boundsRect = this.createBoundsRectangle(this.bounds, 0.05);
 		this.three.scene.add(this.boundsRect);
 
-		this.boundsBox = this.createBoundsBoxLines(this.bounds, 0, 5);
-		this.three.scene.add(this.boundsBox);
+		
 
 		
 		this.player = new Player(playerObj, this.controller, this.bounds, this.world, this.animator);
@@ -126,7 +125,7 @@ export class Game {
 		return true;
 	}
 	private update(dt: number): void {
-		const throwDown = this.controller.getButtonState("KeyQ");
+		const throwDown = this.player.controller.getButtonState("KeyQ");
 		if (throwDown && !this.wasThrowDown) {
 			const res = this.player.throwHeld(this.three.scene, 9, 3.5);
 			if (res) this.thrown.push({ item: res.item, vel: res.vel, radius: 0.22, sleeping: false });
@@ -140,25 +139,15 @@ export class Game {
 		this.three.playerMixer.update(dt);
 		// stations
 		this.stationManager.update(dt, this.controller, this.player, this.three);
-
-		
 		this.updateStationDebugHelpers();
 
+
+		
 		
 
-		if (this.controller.getButtonState("KeyP")) {
-		const world = new THREE.Vector3();
-		this.player.object.getWorldPosition(world);
+		
 
-		const local = this.mapObj.worldToLocal(world.clone());
-
-		console.log(
-			"PLAYER WORLD:",
-			world.x.toFixed(2), world.y.toFixed(2), world.z.toFixed(2),
-			"| LOCAL (use for anchors):",
-			local.x.toFixed(2), local.y.toFixed(2), local.z.toFixed(2)
-		);
-		}
+		
 		const focused = this.stationManager.getFocused();
 		const stationText = focused ? focused.prompt(this.player) : "";
 
@@ -194,137 +183,139 @@ export class Game {
 		requestAnimationFrame(this.draw);
 	};
 
-	private createStations() {
-		const sinkAnchor = this.makeAnchor(this.mapObj, "sinkAnchor", new THREE.Vector3(16.66, 0.29 ,-11.81));
-		const boardAnchor = this.makeAnchor(this.mapObj, "boardAnchor", new THREE.Vector3(11 ,1, -4.59));
-		const stoveAnchor = this.makeAnchor(this.mapObj, "stoveAnchor", new THREE.Vector3(18.71, 0.50 ,-11.44));
-		const fridgeAnchor = this.makeAnchor(this.mapObj, "fridgeAnchor", new THREE.Vector3(20.99, 0.12, -11.50));
-		const trashAnchor = this.makeAnchor(this.mapObj, "fridgeAnchor", new THREE.Vector3(7.87, 0.46, -8.90) )
-		const platesAnchor = this.makeAnchor(this.mapObj, "platesAnchor", new THREE.Vector3(15.09, 0.23, -11.86));
-		const counterAnchor1 = this.makeAnchor(this.mapObj, "sinkAnchor1", new THREE.Vector3(13.24, 0.61, -2.70));
-		const counterAnchor2 = this.makeAnchor(this.mapObj, "sinkAnchor1", new THREE.Vector3(15.21, 0.61, -2.72));
-		const counterAnchor3 = this.makeAnchor(this.mapObj, "sinkAnchor1", new THREE.Vector3(13.24, 0.61, -2.70));
-		const counterAnchor4 = this.makeAnchor(this.mapObj, "sinkAnchor1", new THREE.Vector3(17.02, 0.61, -2.69));
-		const counterAnchor5 = this.makeAnchor(this.mapObj, "sinkAnchor1", new THREE.Vector3(20.23, 0.61, -3.27));
-		const counterAnchor6 = this.makeAnchor(this.mapObj, "sinkAnchor1", new THREE.Vector3(14.03, 0.61, -11.89));
-		const servingAnchor = this.makeAnchor(this.mapObj, "servingAnchor", new THREE.Vector3(16, 0.47, 0.77));
+	// inside core/game.ts (Game class)
+private createStations() {
+  const sinkAnchor = this.makeAnchor(this.mapObj, "sinkAnchor", new THREE.Vector3(16.66, 0.29, -11.81));
+  const boardAnchor = this.makeAnchor(this.mapObj, "boardAnchor", new THREE.Vector3(11, 1, -4.59));
+  const stoveAnchor = this.makeAnchor(this.mapObj, "stoveAnchor", new THREE.Vector3(18.71, 0.50, -11.44));
+  const fridgeAnchor = this.makeAnchor(this.mapObj, "fridgeAnchor", new THREE.Vector3(20.99, 0.12, -11.50));
+  const trashAnchor = this.makeAnchor(this.mapObj, "trashAnchor", new THREE.Vector3(7.87, 0.46, -8.90));
+  const platesAnchor = this.makeAnchor(this.mapObj, "platesAnchor", new THREE.Vector3(15.09, 0.23, -11.86));
 
-		const sink = new Sink(sinkAnchor);
-		sink.halfX = 0.6; 
-		
-		sink.halfZ = 0.6;
-		sink.holdSeconds = 1.2;
-		this.stationManager.add(sink);
+  const counterAnchor1 = this.makeAnchor(this.mapObj, "counterAnchor1", new THREE.Vector3(13.24, 0.61, -2.70));
+  const counterAnchor2 = this.makeAnchor(this.mapObj, "counterAnchor2", new THREE.Vector3(15.21, 0.61, -2.72));
+  const counterAnchor3 = this.makeAnchor(this.mapObj, "counterAnchor3", new THREE.Vector3(13.24, 0.61, -2.70));
+  const counterAnchor4 = this.makeAnchor(this.mapObj, "counterAnchor4", new THREE.Vector3(17.02, 0.61, -2.69));
+  const counterAnchor5 = this.makeAnchor(this.mapObj, "counterAnchor5", new THREE.Vector3(20.23, 0.61, -3.27));
+  const counterAnchor6 = this.makeAnchor(this.mapObj, "counterAnchor6", new THREE.Vector3(14.03, 0.61, -11.89));
 
-		const board = new CuttingBoard(boardAnchor);
-		board.halfX = 1.25; 
-		
-		board.halfZ = 1;
-		board.holdSeconds = 1.0;
-		this.stationManager.add(board);
+  const servingAnchor = this.makeAnchor(this.mapObj, "servingAnchor", new THREE.Vector3(16, 0.47, 0.77));
 
-		const stove = new Stove(stoveAnchor);
-		stove.halfX = 0.7; 
-		
-		stove.halfZ = 0.7;
-		stove.holdSeconds = 1.5;
-		this.stationManager.add(stove);
+  const sink = new Sink(sinkAnchor);
+  sink.halfX = 0.6;
+  sink.halfZ = 0.6;
+  sink.holdSeconds = 1.2;
+  sink.rotation = 0;
+  this.stationManager.add(sink);
 
-		const fridge = new Fridge(fridgeAnchor, this.three);
-		fridge.halfX = 0.7; 
-		
-		fridge.halfZ = 0.7;
-		fridge.holdSeconds = 0.8;
-		this.stationManager.add(fridge);
+  const board = new CuttingBoard(boardAnchor);
+  board.halfX = 1.25;
+  board.halfZ = 1;
+  board.holdSeconds = 1.0;
+  board.rotation = 0;
+  this.stationManager.add(board);
 
-		const trash = new Trash(trashAnchor);
-		trash.halfX = 0.7; 
-		
-		trash.halfZ = 0.7;
-		this.stationManager.add(trash);
+  const stove = new Stove(stoveAnchor);
+  stove.halfX = 0.7;
+  stove.halfZ = 0.7;
+  stove.holdSeconds = 1.5;
+  stove.rotation = 0;
+  this.stationManager.add(stove);
 
-		const plates = new Plates(platesAnchor);
-		plates.halfX = 0.6; 
-		
-		plates.halfZ = 0.75;
-		this.stationManager.add(plates);
+  const fridge = new Fridge(fridgeAnchor, this.three);
+  fridge.halfX = 0.7;
+  fridge.halfZ = 0.7;
+  fridge.holdSeconds = 0.8;
+  fridge.rotation = 0;
+  this.stationManager.add(fridge);
 
-		const counter1 = new Counter(counterAnchor1);
-		counter1.halfX = 0.6;
-		
-		counter1.halfZ = 0.6;
-		
-		this.stationManager.add(counter1);
+  const trash = new Trash(trashAnchor);
+  trash.halfX = 0.7;
+  trash.halfZ = 0.7;
+  trash.holdSeconds = 0.8; // keep if you want it interactable; otherwise remove
+  trash.rotation = 0;
+  this.stationManager.add(trash);
 
-		const counter2 = new Counter(counterAnchor2);
-		counter2.halfX = 0.6;
-		
-		counter2.halfZ = 0.6;
-		
-		this.stationManager.add(counter2);
+  const plates = new Plates(platesAnchor);
+  plates.halfX = 0.6;
+  plates.halfZ = 0.75;
+  plates.holdSeconds = 0.8; // keep if needed
+  plates.rotation = 0;
+  this.stationManager.add(plates);
 
-		const counter3 = new Counter(counterAnchor3);
-		counter3.halfX = 0.6;
-		
-		counter3.halfZ = 0.6;
-		
-		this.stationManager.add(counter3);
+  const counter1 = new Counter(counterAnchor1);
+  counter1.halfX = 0.6;
+  counter1.halfZ = 0.6;
+  counter1.rotation = Math.PI * 3 / 2;
+  this.stationManager.add(counter1);
 
-		const counter4 = new Counter(counterAnchor4);
-		counter4.halfX = 0.6;
-		
-		counter4.halfZ = 0.6;
-		
-		this.stationManager.add(counter4);
+  const counter2 = new Counter(counterAnchor2);
+  counter2.halfX = 0.6;
+  counter2.halfZ = 0.6;
+  counter2.rotation = Math.PI * 3 / 2;
+  this.stationManager.add(counter2);
 
-		const counter5 = new Counter(counterAnchor5);
-		counter5.halfX = 0.6;
-		
-		counter5.halfZ = 0.6;
-		this.stationManager.add(counter5);
+  const counter3 = new Counter(counterAnchor3);
+  counter3.halfX = 0.6;
+  counter3.halfZ = 0.6;
+  counter3.rotation = Math.PI * 3 / 2;
+  this.stationManager.add(counter3);
 
-		const counter6 = new Counter(counterAnchor6);
-		counter6.halfX = 0.6;
-		
-		counter6.halfZ = 0.6;
-		counter6.rotation = Math.PI/2;
-		this.stationManager.add(counter6);
+  const counter4 = new Counter(counterAnchor4);
+  counter4.halfX = 0.6;
+  counter4.halfZ = 0.6;
+  counter4.rotation = Math.PI * 3 / 2;
+  this.stationManager.add(counter4);
 
-		const serving = new Serving(servingAnchor);
-		serving.halfX = 6.5;
-		
-		serving.halfZ = 2;
-		serving.holdSeconds = 0.2;
-		this.stationManager.add(serving);
+  const counter5 = new Counter(counterAnchor5);
+  counter5.halfX = 0.6;
+  counter5.halfZ = 0.6;
+  counter5.rotation = 0;
+  this.stationManager.add(counter5);
 
-		// keep refs so we can draw/update helpers
-		this.stations = [sink, board, stove, fridge, trash, plates, counter1, counter2, counter3, counter4, counter5, counter6, serving];
-	}
-	private createStationDebugHelpers() {
-		// remove old if any
-		for (const h of this.stationHelpers) this.three.scene.remove(h);
-		this.stationHelpers = [];
+  const counter6 = new Counter(counterAnchor6);
+  counter6.halfX = 0.6;
+  counter6.halfZ = 0.6;
+  counter6.rotation = Math.PI / 2;
+  this.stationManager.add(counter6);
 
-		for (const s of this.stations) {
-		const helper = new THREE.Box3Helper(s.getBox()); 
-		this.stationHelpers.push(helper);
-		this.three.scene.add(helper);
-		}
-	}
+  const serving = new Serving(servingAnchor);
+  serving.halfX = 6.5;
+  serving.halfZ = 2;
+  serving.holdSeconds = 0.2;
+  serving.rotation = 0;
+  this.stationManager.add(serving);
+  this.stations = [sink, board, stove, fridge, trash, plates, counter1, counter2, counter3, counter4, counter5, counter6, serving];
+}
 
-	private updateStationDebugHelpers() {
-		// Station.getBox() mutates the same Box3; Box3Helper uses it
-		for (let i = 0; i < this.stations.length; i++) {
-		this.stations[i]!.getBox(); // refresh min/max from anchor
-		this.stationHelpers[i]!.updateMatrixWorld(true);
-		}
-	}
+
+private createStationDebugHelpers() {
+  // remove old if any
+  for (const h of this.stationHelpers) this.three.scene.remove(h);
+  this.stationHelpers = [];
+
+  for (const s of this.stations) {
+    const helper = new THREE.Box3Helper(s.getBox());
+    this.stationHelpers.push(helper);
+    this.three.scene.add(helper);
+  }
+}
+
+private updateStationDebugHelpers() {
+  // Station.getBox() mutates the same Box3; Box3Helper uses it
+  for (let i = 0; i < this.stations.length; i++) {
+    this.stations[i]!.getBox();           // refresh min/max from anchor
+    this.stationHelpers[i]!.updateMatrixWorld(true);
+  }
+}
+	
 
 	private makeAnchor(mapRoot: THREE.Object3D, name: string, localPos: THREE.Vector3): THREE.Object3D {
 		const a = new THREE.Object3D();
 		
 		a.position.copy(localPos);
 		mapRoot.add(a);
+		
 		return a;
 	}
 
@@ -350,24 +341,7 @@ export class Game {
 		return new THREE.Line(geom, new THREE.LineBasicMaterial());
 	}
 
-	private createBoundsBoxLines(b: Bounds, yMin = 0, yMax = 5): THREE.LineSegments {
-		const box3 = new THREE.Box3(
-		new THREE.Vector3(b.minX, yMin, b.minZ),
-		new THREE.Vector3(b.maxX, yMax, b.maxZ)
-		);
-
-		const geom = new THREE.EdgesGeometry(
-		new THREE.BoxGeometry(
-			box3.max.x - box3.min.x,
-			box3.max.y - box3.min.y,
-			box3.max.z - box3.min.z
-		)
-		);
-
-		const lines = new THREE.LineSegments(geom, new THREE.LineBasicMaterial());
-		lines.position.copy(box3.getCenter(new THREE.Vector3()));
-		return lines;
-	}
+	
 	private updateThrownItems(dt: number) {
   const GRAVITY = -20;
   const EPS = 1e-3;

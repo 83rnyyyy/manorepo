@@ -46,7 +46,6 @@ export class Game {
         this.three = new ThreeRenderer(canvas);
         this.stationManager = new StationManager(this.three);
         this.controller = new Controller();
-        this.controller.addButton("KeyP");
         const playerObj = await this.three.spawnPlayer("/public/Panda.glb", new THREE.Vector3(0, 0, 0));
         await this.three.addPlayerVariant("knife", "/public/Panda_Knife.glb");
         await this.three.addPlayerVariant("cooking", "/public/Panda_Pan.glb");
@@ -59,8 +58,6 @@ export class Game {
         this.bounds = this.computeBoundsFromMap(this.mapObj, 1.0);
         this.boundsRect = this.createBoundsRectangle(this.bounds, 0.05);
         this.three.scene.add(this.boundsRect);
-        this.boundsBox = this.createBoundsBoxLines(this.bounds, 0, 5);
-        this.three.scene.add(this.boundsBox);
         this.player = new Player(playerObj, this.controller, this.bounds, this.world, this.animator);
         this.clock.start();
         const plates = this.stationManager.getByType(Plates);
@@ -99,7 +96,7 @@ export class Game {
         return true;
     }
     update(dt) {
-        const throwDown = this.controller.getButtonState("KeyQ");
+        const throwDown = this.player.controller.getButtonState("KeyQ");
         if (throwDown && !this.wasThrowDown) {
             const res = this.player.throwHeld(this.three.scene, 9, 3.5);
             if (res)
@@ -113,12 +110,6 @@ export class Game {
         // stations
         this.stationManager.update(dt, this.controller, this.player, this.three);
         this.updateStationDebugHelpers();
-        if (this.controller.getButtonState("KeyP")) {
-            const world = new THREE.Vector3();
-            this.player.object.getWorldPosition(world);
-            const local = this.mapObj.worldToLocal(world.clone());
-            console.log("PLAYER WORLD:", world.x.toFixed(2), world.y.toFixed(2), world.z.toFixed(2), "| LOCAL (use for anchors):", local.x.toFixed(2), local.y.toFixed(2), local.z.toFixed(2));
-        }
         const focused = this.stationManager.getFocused();
         const stationText = focused ? focused.prompt(this.player) : "";
         // PICKUP (KeyE press) only if no station is actively prompting
@@ -151,95 +142,93 @@ export class Game {
         this.three.render();
         requestAnimationFrame(this.draw);
     };
+    // inside core/game.ts (Game class)
     createStations() {
         const sinkAnchor = this.makeAnchor(this.mapObj, "sinkAnchor", new THREE.Vector3(16.66, 0.29, -11.81));
         const boardAnchor = this.makeAnchor(this.mapObj, "boardAnchor", new THREE.Vector3(11, 1, -4.59));
         const stoveAnchor = this.makeAnchor(this.mapObj, "stoveAnchor", new THREE.Vector3(18.71, 0.50, -11.44));
         const fridgeAnchor = this.makeAnchor(this.mapObj, "fridgeAnchor", new THREE.Vector3(20.99, 0.12, -11.50));
-        const trashAnchor = this.makeAnchor(this.mapObj, "fridgeAnchor", new THREE.Vector3(7.87, 0.46, -8.90));
+        const trashAnchor = this.makeAnchor(this.mapObj, "trashAnchor", new THREE.Vector3(7.87, 0.46, -8.90));
         const platesAnchor = this.makeAnchor(this.mapObj, "platesAnchor", new THREE.Vector3(15.09, 0.23, -11.86));
-        const counterAnchor1 = this.makeAnchor(this.mapObj, "sinkAnchor1", new THREE.Vector3(13.24, 0.61, -2.70));
-        const counterAnchor2 = this.makeAnchor(this.mapObj, "sinkAnchor1", new THREE.Vector3(15.21, 0.61, -2.72));
-        const counterAnchor3 = this.makeAnchor(this.mapObj, "sinkAnchor1", new THREE.Vector3(13.24, 0.61, -2.70));
-        const counterAnchor4 = this.makeAnchor(this.mapObj, "sinkAnchor1", new THREE.Vector3(17.02, 0.61, -2.69));
-        const counterAnchor5 = this.makeAnchor(this.mapObj, "sinkAnchor1", new THREE.Vector3(20.23, 0.61, -3.27));
-        const counterAnchor6 = this.makeAnchor(this.mapObj, "sinkAnchor1", new THREE.Vector3(14.03, 0.61, -11.89));
+        const counterAnchor1 = this.makeAnchor(this.mapObj, "counterAnchor1", new THREE.Vector3(13.24, 0.61, -2.70));
+        const counterAnchor2 = this.makeAnchor(this.mapObj, "counterAnchor2", new THREE.Vector3(15.21, 0.61, -2.72));
+        const counterAnchor3 = this.makeAnchor(this.mapObj, "counterAnchor3", new THREE.Vector3(13.24, 0.61, -2.70));
+        const counterAnchor4 = this.makeAnchor(this.mapObj, "counterAnchor4", new THREE.Vector3(17.02, 0.61, -2.69));
+        const counterAnchor5 = this.makeAnchor(this.mapObj, "counterAnchor5", new THREE.Vector3(20.23, 0.61, -3.27));
+        const counterAnchor6 = this.makeAnchor(this.mapObj, "counterAnchor6", new THREE.Vector3(14.03, 0.61, -11.89));
         const servingAnchor = this.makeAnchor(this.mapObj, "servingAnchor", new THREE.Vector3(16, 0.47, 0.77));
         const sink = new Sink(sinkAnchor);
         sink.halfX = 0.6;
-        sink.halfY = 1.0;
         sink.halfZ = 0.6;
         sink.holdSeconds = 1.2;
+        sink.rotation = 0;
         this.stationManager.add(sink);
         const board = new CuttingBoard(boardAnchor);
         board.halfX = 1.25;
-        board.halfY = 1;
         board.halfZ = 1;
         board.holdSeconds = 1.0;
+        board.rotation = 0;
         this.stationManager.add(board);
         const stove = new Stove(stoveAnchor);
         stove.halfX = 0.7;
-        stove.halfY = 1.0;
         stove.halfZ = 0.7;
         stove.holdSeconds = 1.5;
+        stove.rotation = 0;
         this.stationManager.add(stove);
         const fridge = new Fridge(fridgeAnchor, this.three);
         fridge.halfX = 0.7;
-        fridge.halfY = 1.0;
         fridge.halfZ = 0.7;
         fridge.holdSeconds = 0.8;
+        fridge.rotation = 0;
         this.stationManager.add(fridge);
         const trash = new Trash(trashAnchor);
         trash.halfX = 0.7;
-        trash.halfY = 1.0;
         trash.halfZ = 0.7;
+        trash.holdSeconds = 0.8; // keep if you want it interactable; otherwise remove
+        trash.rotation = 0;
         this.stationManager.add(trash);
         const plates = new Plates(platesAnchor);
         plates.halfX = 0.6;
-        plates.halfY = 1;
         plates.halfZ = 0.75;
+        plates.holdSeconds = 0.8; // keep if needed
+        plates.rotation = 0;
         this.stationManager.add(plates);
         const counter1 = new Counter(counterAnchor1);
         counter1.halfX = 0.6;
-        counter1.halfY = 1;
         counter1.halfZ = 0.6;
         counter1.rotation = Math.PI * 3 / 2;
         this.stationManager.add(counter1);
         const counter2 = new Counter(counterAnchor2);
         counter2.halfX = 0.6;
-        counter2.halfY = 1;
         counter2.halfZ = 0.6;
         counter2.rotation = Math.PI * 3 / 2;
         this.stationManager.add(counter2);
         const counter3 = new Counter(counterAnchor3);
         counter3.halfX = 0.6;
-        counter3.halfY = 1;
         counter3.halfZ = 0.6;
         counter3.rotation = Math.PI * 3 / 2;
         this.stationManager.add(counter3);
         const counter4 = new Counter(counterAnchor4);
         counter4.halfX = 0.6;
-        counter4.halfY = 1;
         counter4.halfZ = 0.6;
         counter4.rotation = Math.PI * 3 / 2;
         this.stationManager.add(counter4);
         const counter5 = new Counter(counterAnchor5);
         counter5.halfX = 0.6;
-        counter5.halfY = 1;
         counter5.halfZ = 0.6;
+        counter5.rotation = 0;
         this.stationManager.add(counter5);
         const counter6 = new Counter(counterAnchor6);
         counter6.halfX = 0.6;
-        counter6.halfY = 1;
         counter6.halfZ = 0.6;
         counter6.rotation = Math.PI / 2;
         this.stationManager.add(counter6);
         const serving = new Serving(servingAnchor);
         serving.halfX = 6.5;
-        serving.halfY = 1;
         serving.halfZ = 2;
+        serving.holdSeconds = 0.2;
+        serving.rotation = 0;
         this.stationManager.add(serving);
-        // keep refs so we can draw/update helpers
         this.stations = [sink, board, stove, fridge, trash, plates, counter1, counter2, counter3, counter4, counter5, counter6, serving];
     }
     createStationDebugHelpers() {
@@ -285,13 +274,6 @@ export class Game {
         ];
         const geom = new THREE.BufferGeometry().setFromPoints(pts);
         return new THREE.Line(geom, new THREE.LineBasicMaterial());
-    }
-    createBoundsBoxLines(b, yMin = 0, yMax = 5) {
-        const box3 = new THREE.Box3(new THREE.Vector3(b.minX, yMin, b.minZ), new THREE.Vector3(b.maxX, yMax, b.maxZ));
-        const geom = new THREE.EdgesGeometry(new THREE.BoxGeometry(box3.max.x - box3.min.x, box3.max.y - box3.min.y, box3.max.z - box3.min.z));
-        const lines = new THREE.LineSegments(geom, new THREE.LineBasicMaterial());
-        lines.position.copy(box3.getCenter(new THREE.Vector3()));
-        return lines;
     }
     updateThrownItems(dt) {
         const GRAVITY = -20;

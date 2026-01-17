@@ -5,7 +5,7 @@ export class Serving extends Station {
         }
         return "";
     }
-    onComplete(ctx, player, three) {
+    onComplete(player, three) {
     }
 }
 //# sourceMappingURL=serving.js.map
