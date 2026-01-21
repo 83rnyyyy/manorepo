@@ -9,6 +9,12 @@ import { ClosedSeaUrchinItem } from "./recipes/closedSeaUrchin.js";
 import { SeaweedItem } from "./recipes/seaweed.js";
 import { CucumberItem } from "./recipes/cucumber.js";
 import { ChoppedCucumberItem } from "./recipes/choppedCucumber.js";
+import { SalmonRollItem } from "./recipes/salmonRoll.js";
+import { SeaUrchinRoll } from "./recipes/seaUrchinRoll.js";
+import { UncookedRiceItem } from "./recipes/uncookedRice.js";
+import { SalmonNigiriItem } from "./recipes/salmonNigiri.js";
+import { OctopusNigiriItem } from "./recipes/octopusNigiri.js";
+import { OctopusItem } from "./recipes/octopus.js";
 
 
 export type Bounds = {
@@ -35,4 +41,4 @@ export type SpawnedPlayer = {
   clips: THREE.AnimationClip[];
 };
 
-export type Foods = SalmonFishItem | RiceItem | ChoppedSalmonItem | TentacleItem | OpenedSeaUrchinItem | ClosedSeaUrchinItem | SeaweedItem | CucumberItem | ChoppedCucumberItem;
+export type Foods = SalmonFishItem | RiceItem | ChoppedSalmonItem | TentacleItem | OpenedSeaUrchinItem | ClosedSeaUrchinItem | SeaweedItem | CucumberItem | ChoppedCucumberItem | SeaUrchinRoll | UncookedRiceItem | SalmonNigiriItem | OctopusNigiriItem | OctopusItem | SalmonRollItem;
