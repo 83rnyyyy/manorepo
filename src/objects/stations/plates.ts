@@ -8,9 +8,9 @@ import { HoldableItem } from "../../utilities/holdableItem.js";
 export class Plates extends Station {
   public plates: number = 3;
   public plateLocations: number[][] = [
+    [-0.85,1.9,-8.69],
     [-0.85,2,-8.69],
-    [-0.85,2.1,-8.69],
-    [-0.85,2.2,-8.69]
+    [-0.85,2.1,-8.69]
   ];
   public currentItems: PlateItem[] = [];
    
@@ -18,21 +18,27 @@ export class Plates extends Station {
     return "Hold E to Grab Plates";
   }
 
-  
-  private takePlate(): HoldableItem | null{
+  protected onBegin() {
+    // optional: start animation/sfx
+  }
+  private takePlate(): PlateItem | null{
     const plate = this.currentItems.pop() ?? null
-    return plate as HoldableItem | null;
+    return plate;
     
     
   }
   protected onComplete(player: Player): void {
-    
-    
-    if(this.plates !== 0){
+    this.plates--;
+    if(this.plates !== 0 && !player.getHeldItem()){
       player.pickup(this.takePlate() as HoldableItem);
     }
-    this.plates--;
     
+    // TODO: convert ingredient -> chopped ingredient
+  }
+  public addPlate(plate: PlateItem): void{
+    if(this.currentItems.length > 3) return;
     
+    plate.object.position.set(this.plateLocations[this.currentItems.length]![0]!,this.plateLocations[this.currentItems.length]![1]!,this.plateLocations[this.currentItems.length]![2]!);
+    this.currentItems.push(plate);
   }
 }
