@@ -17,7 +17,6 @@ export class HoldableItem {
         this.z = z;
         this.object.position.set(x, y, z);
         this.object.scale.setScalar(this.scale);
-        // keep gameplay radii in sync with visuals
         this.radius *= this.scale;
         this.pickupRadius *= this.scale;
         renderer.scene.add(this.object);

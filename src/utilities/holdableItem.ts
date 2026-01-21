@@ -24,8 +24,6 @@ export abstract class HoldableItem{
 
     renderer.scene.add(this.object);
   }
-
-
   
   public deleteObject(): void {
         this.object.removeFromParent(); 

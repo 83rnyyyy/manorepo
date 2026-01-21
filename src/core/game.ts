@@ -25,7 +25,6 @@ import { Capsule } from "three/examples/jsm/Addons.js";
 
 export class Game {
 	private three: ThreeRenderer;
-	private controller: Controller;
 	private player: Player;
 	private stationManager:StationManager;
 	private progressUI = new ProgressBar();
@@ -48,11 +47,10 @@ export class Game {
 		void this.init();
 	}
 
-	private async init() {
+	private async init():Promise<void> {
 		const canvas = Canvas.canvas;
 		this.three = new ThreeRenderer(canvas);
 		this.stationManager = new StationManager(this.three);
-		this.controller = new Controller();
 		this.mapObj = await this.three.loadGLB("/public/test7.glb");
 		this.createStations();
 		this.createStationDebugHelpers();
@@ -166,6 +164,7 @@ export class Game {
 		const counterAnchor4 = this.makeAnchor(this.mapObj, new THREE.Vector3(17.02, 0.61, -2.69));
 		const counterAnchor5 = this.makeAnchor(this.mapObj, new THREE.Vector3(20.23, 0.61, -3.27));
 		const counterAnchor6 = this.makeAnchor(this.mapObj, new THREE.Vector3(14.03, 0.61, -11.89));
+		const counterAnchor7 = this.makeAnchor(this.mapObj, new THREE.Vector3(18.6, 0.61, -2.69));
 
 		const servingAnchor = this.makeAnchor(this.mapObj, new THREE.Vector3(16, 0.47, 0.77));
 
@@ -177,8 +176,8 @@ export class Game {
 		this.stationManager.add(sink);
 
 		const board = new CuttingBoard(boardAnchor);
-		board.halfX = 4;
-		board.halfZ = 1.5;
+		board.halfX = 0.8;
+		board.halfZ = 1.2;
 		board.holdSeconds = 1.0;
 		board.rotation = 0;
 		this.stationManager.add(board);
@@ -200,14 +199,14 @@ export class Game {
 		const trash = new Trash(trashAnchor);
 		trash.halfX = 0.7;
 		trash.halfZ = 0.7;
-		trash.holdSeconds = 0.8; // keep if you want it interactable; otherwise remove
+		trash.holdSeconds = 0.8; 
 		trash.rotation = 0;
 		this.stationManager.add(trash);
 
 		const plates = new Plates(platesAnchor);
 		plates.halfX = 0.6;
 		plates.halfZ = 0.75;
-		plates.holdSeconds = 0.8; // keep if needed
+		plates.holdSeconds = 0.8; 
 		plates.rotation = 0;
 		this.stationManager.add(plates);
 
@@ -247,13 +246,20 @@ export class Game {
 		counter6.rotation = Math.PI / 2;
 		this.stationManager.add(counter6);
 
+		const counter7 = new Counter(counterAnchor7);
+		counter7.halfX = 0.6;
+		counter7.halfZ = 0.6;
+		counter7.rotation = Math.PI * 3 / 2;
+		this.stationManager.add(counter7);
+
 		const serving = new Serving(servingAnchor);
 		serving.halfX = 6.5;
 		serving.halfZ = 2;
 		serving.holdSeconds = 0.2;
-		serving.rotation = 0;
+
+
 		this.stationManager.add(serving);
-		this.stations = [sink, board, stove, fridge, trash, plates, counter1, counter2, counter3, counter4, counter5, counter6, serving];
+		this.stations = [sink, board, stove, fridge, trash, plates, counter1, counter2, counter3, counter4, counter5, counter6, counter7, serving];
 	}
 
 
