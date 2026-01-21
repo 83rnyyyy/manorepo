@@ -10,72 +10,90 @@ import { ThreeRenderer } from "../core/render";
 
 export class Player {
 	public movementDisabled: boolean = false;
-	public moveSpeed: number = 6;
-	private capsuleRadius: number = 0.35;
-	private capsuleHeight: number = 1.3;
-	private groundY: number = 0;
-  	private held: HoldableItem | null = null;
-  	private holdSocket:THREE.Object3D = new THREE.Object3D();
+	public moveSpeed = 6;
+
+	private capsuleRadius = 0.35;
+	private capsuleHeight = 1.3;
+	private groundY = 0;
+	private modelYawOffset = 0; // try Math.PI, Math.PI/2, -Math.PI/2 if needed
+	private held: HoldableItem | null = null;
+	private holdSocket = new THREE.Object3D();
 	private actionName: PlayerAnimState | null = null;
-	private actionTimeLeft: number = 0;
-	private throwSpeed:number = 6;
-	private upSpeed:number = 3;  
-  	private turnSpeed:number = 18;     
+	private actionTimeLeft = 0;
+
+
+	// true = instant, false = smooth
+	private turnSpeed = 18;       // rad/sec if snapTurn=false
+	private throwSpeed: number = 6;
+	private upSpeed: number = 3;
 	private wasThrowDown = false;
 	private wasEDown = false;
-	constructor(private object: THREE.Object3D, public controller: Controller, private bounds: Bounds, private world: Octree, private animator: PlayerAnimator, private collider: Capsule){}
+	constructor(public object: THREE.Object3D, public controller: Controller, private bounds: Bounds, private world: Octree, private animator: PlayerAnimator, private collider: Capsule){}
 
-	public startAction(name: PlayerAnimState, durationSec: number): void {
-    	this.actionName = name;
-    	this.actionTimeLeft = durationSec;
-    	this.animator.set(name); 
-  	}
+
+
+	public startAction(name: PlayerAnimState, durationSec: number) {
+		this.actionName = name;
+		this.actionTimeLeft = durationSec;
+		this.animator.set(name);
+	}
+
+
 	public getHeldItem(): HoldableItem | null {
 		return this.held;
 	}
 	public getWorldPos(out = new THREE.Vector3()): THREE.Vector3 {
 		return this.object.getWorldPosition(out);
 	}
-	public removeHeldItem(): HoldableItem | null{
-		if(this.held){
+	public removeHeldItem(): HoldableItem | null {
+		if (this.held) {
 			const item = this.held;
 			this.held = null;
-			
+
 			item!.object.removeFromParent();
 			return item;
 		}
 		else return null;
 	}
-
-	public deleteHeldItem(): void{
-		if(this.held){
-		this.held.object.removeFromParent();
-		this.held.object.traverse((o: any) => {
-			o.geometry?.dispose?.();
-			const m = o.material;
-			if (Array.isArray(m)) m.forEach((x) => x.dispose?.());
-			else m?.dispose?.();
-		});
+	public deleteHeldItem(): void {
+		if (this.held) {
+			this.held.object.removeFromParent();
+			this.held.object.traverse((o: any) => {
+				o.geometry?.dispose?.();
+				const m = o.material;
+				if (Array.isArray(m)) m.forEach((x) => x.dispose?.());
+				else m?.dispose?.();
+			});
+			this.held = null;
 		}
-		
+
 	}
-	public bindHoldSocket(): void{
+	public bindHoldSocket(): void {
 
-      this.object.add(this.holdSocket); 
-      this.holdSocket.position.set(0.05, 1.75, 1);
+		this.object.add(this.holdSocket);
+		this.holdSocket.position.set(0.05, 1.75, 1);
 
 
-  }
+	}
 
 	public pickup(item: HoldableItem): void {
 		this.held = item;
+
+		// parent item to socket
 		this.holdSocket.add(item.object);
+
+		// reset local transform so it snaps nicely
 		item.object.position.set(0, 0, 0);
 		item.object.rotation.set(0, 0, 0);
-		item.object.scale.setScalar(1); 
-  	}
 
-  // Place item onto an anchor (like a station surface)
+		// optional: scale for held look
+		item.object.scale.setScalar(1);
+
+
+
+	}
+
+	// Place item onto an anchor (like a station surface)
 	public placeOn(anchor: THREE.Object3D, localOffset = new THREE.Vector3(0, 1, 0), yaw = 0): HoldableItem | null {
 		if (!this.held) return null;
 		const item = this.held;
@@ -88,21 +106,23 @@ export class Player {
 		item.object.position.copy(off);
 		item.object.rotation.set(0, yaw, 0);
 
-		
-		
+
+
 		return item;
 	}
 
-  	private changeDirection(ix: number, iz: number, dt: number): void {
-    
+	private changeDirection(ix: number, iz: number, dt: number) {
+
 		if (ix === 0 && iz === 0) return;
 
-		let yaw = Math.atan2(ix, iz);
+		let yaw = Math.atan2(ix, iz) + this.modelYawOffset;
 
 		const step = Math.PI / 4;
 		yaw = Math.round(yaw / step) * step;
 
 		const cur = this.object.rotation.y;
+
+		// shortest signed angle difference in [-PI, PI]
 		const delta = Math.atan2(Math.sin(yaw - cur), Math.cos(yaw - cur));
 
 		const t = Math.min(1, this.turnSpeed * dt);
@@ -110,32 +130,30 @@ export class Player {
 	}
 
 	public throwHeld(scene: THREE.Scene): HoldableItem | null {
-  if (!this.held) return null;
+		if (!this.held) return null;
 
-  const item = this.held;
-  this.held = null;
+		const item = this.held;
+		this.held = null;
 
-  scene.attach(item.object);
+		scene.attach(item.object);
 
-  const yaw = this.object.rotation.y;
-  const forward = new THREE.Vector3(Math.sin(yaw), 0, Math.cos(yaw)).normalize();
+		const yaw = this.object.rotation.y;
+		const forward = new THREE.Vector3(Math.sin(yaw), 0, Math.cos(yaw)).normalize();
 
-  const origin = new THREE.Vector3();
-  this.object.getWorldPosition(origin);
+		const origin = new THREE.Vector3();
+		this.object.getWorldPosition(origin);
 
-  item.object.position.copy(origin);
-  // item.object.position.y += 1.2; // optional (recommended)
-  item.object.rotation.set(0, yaw, 0);
+		item.object.position.copy(origin);
+		// item.object.position.y += 1.2; // optional (recommended)
+		item.object.rotation.set(0, yaw, 0);
 
-  item.vel.copy(forward).multiplyScalar(this.throwSpeed);
-  item.vel.y = this.upSpeed;
-  item.moving = true;
+		item.vel.copy(forward).multiplyScalar(this.throwSpeed);
+		item.vel.y = this.upSpeed;
+		item.moving = true;
 
-  return item;
-}
-
-
-	private tryPickupThrown(thrown:HoldableItem[]): boolean {
+		return item;
+	}
+	private tryPickupThrown(thrown: HoldableItem[]): boolean {
 		if (this.getHeldItem()) return false;
 
 		const p = this.getWorldPos(new THREE.Vector3());
@@ -148,7 +166,7 @@ export class Player {
 			const ip = t.object.getWorldPosition(new THREE.Vector3());
 			const d = ip.distanceTo(p);
 
-			
+
 			const r = (t as any).pickupRadius;
 
 			if (d <= r && d < bestD) {
@@ -160,15 +178,12 @@ export class Player {
 		if (bestI === -1) return false;
 
 		const picked = thrown.splice(bestI, 1)[0]!;
-		picked.object.removeFromParent(); 
+		picked.object.removeFromParent();
 		this.pickup(picked);
 		return true;
 	}
 
-	
-
-
-  	public update(dt: number, three: ThreeRenderer, thrown:HoldableItem[]): void {
+	public update(dt: number, three: ThreeRenderer, thrown:HoldableItem[]): void {
 		
 		const ix = (this.controller.getButtonState("KeyD") ? 1 : 0) + (this.controller.getButtonState("KeyA") ? -1 : 0);
 
@@ -255,4 +270,5 @@ export class Player {
 		this.actionName = null;
 		this.actionTimeLeft = 0;
 	}
+
 }
