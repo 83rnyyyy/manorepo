@@ -1,4 +1,6 @@
-// ui/ProgressUI.ts
+/**
+ * Shows and changes the text and progress that is shown during the progress bar of interaction with stations. 
+ */
 export class ProgressBar {
   private root: HTMLDivElement;
   private bar: HTMLDivElement;
@@ -39,18 +41,18 @@ export class ProgressBar {
     document.body.appendChild(this.root);
   }
 
-  public show(text: string) {
-    console.log("asdasdasd");
+  public show(text: string): void {
+    
     this.root.style.display = "block";
     this.label.textContent = text;
   }
 
-  public setProgress(p: number) {
+  public setProgress(p: number): void {
     const pct = Math.max(0, Math.min(1, p)) * 100;
     this.bar.style.width = `${pct}%`;
   }
 
-  public hide() {
+  public hide(): void {
     this.root.style.display = "none";
     this.bar.style.width = "0%";
   }

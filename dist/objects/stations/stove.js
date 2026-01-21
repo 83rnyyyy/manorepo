@@ -4,7 +4,7 @@ import { Station } from "./station.js";
 export class Stove extends Station {
     hasItem = true;
     heldItem;
-    cookwareLoc = [2.7, 1.6, -8.69];
+    cookwareLoc = [2.7, 2.1, -8.69];
     prompt(player) {
         if (!player.getHeldItem() && this.hasItem)
             if (this.heldItem?.name == "pot" && this.heldItem.potState == this.heldItem.uncooked)
@@ -15,14 +15,14 @@ export class Stove extends Station {
             return "Hold E to place Item";
         return "Hold E to cook";
     }
-    tick(dt, controller, playerWorldPos, player, three) {
+    tick(dt, playerWorldPos, player, three) {
         if (this.heldItem) {
             if (this.heldItem.name == "pot" && this.heldItem.potState == this.heldItem.empty) {
                 if (player.getHeldItem() && player.getHeldItem().name != "Rice")
                     return;
             }
         }
-        super.tick(dt, controller, playerWorldPos, player, three);
+        super.tick(dt, playerWorldPos, player, three);
     }
     onComplete(player) {
         if (this.hasItem) {
@@ -58,7 +58,8 @@ export class Stove extends Station {
             this.heldItem = player.placeOn(this.anchor, new THREE.Vector3(0, 1.65, -1.1), this.rotation);
             this.hasItem = true;
         }
-        // TODO: cook item in pan/pot
+    }
+    onCancel(three, player) {
     }
 }
 //# sourceMappingURL=stove.js.map

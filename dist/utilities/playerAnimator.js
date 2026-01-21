@@ -5,8 +5,6 @@ export class PlayerAnimator {
         this.actions = actions;
     }
     getAction(state) {
-        if (!this.actions[state])
-            return null;
         return this.actions[state];
     }
     set(state) {
@@ -14,9 +12,8 @@ export class PlayerAnimator {
         if (!next || next === this.current)
             return;
         next.reset().play();
-        if (this.current) {
+        if (this.current)
             this.current.crossFadeTo(next, 0.15, false);
-        }
         this.current = next;
     }
 }

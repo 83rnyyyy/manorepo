@@ -8,9 +8,9 @@ import { HoldableItem } from "../../utilities/holdableItem.js";
 export class Plates extends Station {
   public plates: number = 3;
   public plateLocations: number[][] = [
-    [-0.85,1.5,-8.69],
-    [-0.85,1.6,-8.69],
-    [-0.85,1.7,-8.69]
+    [-0.85,2,-8.69],
+    [-0.85,2.1,-8.69],
+    [-0.85,2.2,-8.69]
   ];
   public currentItems: PlateItem[] = [];
    

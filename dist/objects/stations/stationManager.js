@@ -3,7 +3,7 @@ import * as THREE from "three";
 export class StationManager {
     three;
     stations = [];
-    focused = null;
+    _focused = null;
     constructor(three) {
         this.three = three;
         this.three = three;
@@ -11,11 +11,8 @@ export class StationManager {
     add(station) {
         this.stations.push(station);
     }
-    update(dt, controller, player, three) {
-        const playerObj = player.object;
-        const p = new THREE.Vector3();
-        playerObj.getWorldPosition(p);
-        // pick closest station that contains player
+    update(dt, player, three) {
+        const p = player.getWorldPos(new THREE.Vector3());
         let best = null;
         let bestDist = Infinity;
         for (const s of this.stations) {
@@ -30,13 +27,14 @@ export class StationManager {
         }
         if (this.focused && this.focused !== best)
             this.focused.cancel(three, player);
-        this.focused = best;
+        this._focused = best;
         if (this.focused) {
-            this.focused.tick(dt, controller, p, player, this.three);
+            this.focused.tick(dt, p, player, this.three);
         }
+        console.log(this._focused);
     }
-    getFocused() {
-        return this.focused;
+    get focused() {
+        return this._focused;
     }
     getByType(ctor) {
         return this.stations.find(s => s instanceof ctor);

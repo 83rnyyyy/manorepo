@@ -1,7 +1,6 @@
 export class FridgeMenu {
     items;
-    openFlag = false;
-    onClose = null;
+    opened = false;
     overlay;
     panel;
     grid;
@@ -14,8 +13,9 @@ export class FridgeMenu {
         this.onClose = fn;
     }
     isOpen() {
-        return this.openFlag;
+        return this.opened;
     }
+    onClose = null;
     ensureUI() {
         if (this.overlay)
             return;
@@ -68,7 +68,7 @@ export class FridgeMenu {
                 this.close();
         });
         window.addEventListener("keydown", (e) => {
-            if (!this.openFlag)
+            if (!this.opened)
                 return;
             if (e.key === "Escape")
                 this.close();
@@ -76,7 +76,7 @@ export class FridgeMenu {
     }
     open() {
         this.ensureUI();
-        this.openFlag = true;
+        this.opened = true;
         this.selectedId = null;
         this.grid.innerHTML = "";
         for (const item of this.items) {
@@ -106,9 +106,9 @@ export class FridgeMenu {
         this.overlay.style.display = "flex";
     }
     close() {
-        if (!this.openFlag)
+        if (!this.opened)
             return;
-        this.openFlag = false;
+        this.opened = false;
         this.overlay.style.display = "none";
         const picked = this.selectedId;
         this.selectedId = null;

@@ -2,6 +2,7 @@
 import * as THREE from "three";
 export class Station {
     anchor;
+    promptText = '';
     interactKey = "KeyE";
     holdSeconds = 1.0;
     rotation = 0;
@@ -28,7 +29,7 @@ export class Station {
         this.updateBox();
         return this.box;
     }
-    getProgress01() {
+    getProgress() {
         return THREE.MathUtils.clamp(this.progress / this.holdSeconds, 0, 1);
     }
     cancel(three, player) {
@@ -37,9 +38,9 @@ export class Station {
         this.active = false;
         this.progress = 0;
     }
-    tick(dt, controller, playerWorldPos, player, three) {
+    tick(dt, playerWorldPos, player, three) {
         const inside = this.containsPoint(playerWorldPos);
-        const holding = controller.getButtonState(this.interactKey);
+        const holding = player.controller.getButtonState(this.interactKey);
         if (!inside || !holding) {
             this.cancel(three, player);
             return;
@@ -56,6 +57,8 @@ export class Station {
         }
     }
     onCancel(three, player) { }
+    ;
     useAnimation(three, player) { }
+    ;
 }
 //# sourceMappingURL=station.js.map

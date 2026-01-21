@@ -7,7 +7,7 @@ import AssetManager from "./utilities/assetManager.js";
 class Driver {
     async start() {
         Canvas.setup();
-        AssetManager.init();
+        //AssetManager.init();
         await AssetManager.addAllAssets();
         new Game();
     }

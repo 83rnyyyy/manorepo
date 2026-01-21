@@ -6,18 +6,18 @@ export type Assets = 'Cucumber' | 'Chopped Cucumber' |'Plate' | 'Pan' | 'Rice' |
 type AssetLibrary = Partial<Record<Assets, THREE.Object3D>>;
 
 export default class AssetManager {
-  private static manager = new THREE.LoadingManager();
-  private static loader = new GLTFLoader(AssetManager.manager);
+  private static manager: THREE.LoadingManager = new THREE.LoadingManager();
+  private static loader: GLTFLoader = new GLTFLoader(AssetManager.manager);
   private static library: AssetLibrary = {}; 
 
-  public static onProgress?: (url: string, loaded: number, total: number) => void;
-  public static onError?: (url: string) => void;
+  public static onProgress: (url: string, loaded: number, total: number) => void;
+  public static onError: (url: string) => void;
 
-  public static init() {
-    AssetManager.manager.onProgress = (url, loaded, total) =>
-    AssetManager.onProgress?.(url, loaded, total);
-    AssetManager.manager.onError = (url) => AssetManager.onError?.(url);
-  }
+  // public static init() {
+  //   AssetManager.manager.onProgress = (url, loaded, total) =>
+  //   AssetManager.onProgress?.(url, loaded, total);
+  //   AssetManager.manager.onError = (url) => AssetManager.onError?.(url);
+  // }
   public static async addAllAssets():Promise<void>{
     await Promise.all([
       this.addPrefab("Plate", "/public/Environment/glTF/Environment_Plate.gltf"),

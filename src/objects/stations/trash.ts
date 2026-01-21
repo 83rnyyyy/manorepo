@@ -1,5 +1,4 @@
-// objects/stations/trash.ts (optional but common)
-import * as THREE from "three";
+
 import { Station} from "./station.js";
 
 

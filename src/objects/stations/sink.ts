@@ -3,6 +3,7 @@ import * as THREE from "three";
 import { Station} from "./station.js";
 
 import { ThreeRenderer } from "../../core/render.js";
+import { Player } from "../player.js";
 
 export class Sink extends Station {
   public prompt(): string {
@@ -16,6 +17,10 @@ export class Sink extends Station {
 
   protected onComplete(): void {
     
+    
+  }
+
+  protected override onCancel(three: ThreeRenderer, player: Player): void {
     
   }
 

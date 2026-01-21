@@ -7,5 +7,7 @@ export class Sink extends Station {
     }
     onComplete() {
     }
+    onCancel(three, player) {
+    }
 }
 //# sourceMappingURL=sink.js.map

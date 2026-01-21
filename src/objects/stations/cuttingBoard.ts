@@ -9,9 +9,11 @@ import { Food } from "../../utilities/food.js";
 import RecipeManager from "../recipes/recipeManager.js";
 
 export class CuttingBoard extends Station {
-  private heldItem: Food | null;
+  private heldItem: Food | null = null;
   public prompt(player: Player): string {
+    console.log(this.heldItem);
     if(this.heldItem){
+      console.log(this.heldItem)
       if(this.heldItem.isChoppable) return `Hold E To Chop ${this.heldItem?.name}`;
       else return `Hold E To Pickup ${this.heldItem?.name} From Board`;
     } 

@@ -1,45 +1,33 @@
 // objects/player.ts
 import * as THREE from "three";
-import { Capsule } from "three/examples/jsm/math/Capsule.js";
 export class Player {
+    object;
     controller;
     bounds;
     world;
-    movementDisabled = false;
-    object;
-    moveSpeed = 6;
+    animator;
     collider;
+    movementDisabled = false;
+    moveSpeed = 6;
     capsuleRadius = 0.35;
     capsuleHeight = 1.3;
     groundY = 0;
-    animator;
-    modelYawOffset = 0; // try Math.PI, Math.PI/2, -Math.PI/2 if needed
     held = null;
     holdSocket = new THREE.Object3D();
     actionName = null;
     actionTimeLeft = 0;
-    // true = instant, false = smooth
-    turnSpeed = 18; // rad/sec if snapTurn=false
-    constructor(object, controller, bounds, world, animator) {
+    throwSpeed = 6;
+    upSpeed = 3;
+    turnSpeed = 18;
+    wasThrowDown = false;
+    wasEDown = false;
+    constructor(object, controller, bounds, world, animator, collider) {
+        this.object = object;
         this.controller = controller;
         this.bounds = bounds;
         this.world = world;
         this.animator = animator;
-        this.object = object;
-        this.controller.addButton("KeyE");
-        this.controller.addButton("KeyW");
-        this.controller.addButton("KeyA");
-        this.controller.addButton("KeyS");
-        this.controller.addButton("KeyD");
-        this.controller.addButton("KeyQ");
-        // create capsule at current player position
-        const p = this.object.position.clone();
-        const radius = 0.35;
-        const height = 1.3; // tune
-        const start = p.clone().add(new THREE.Vector3(0, radius, 0));
-        const end = p.clone().add(new THREE.Vector3(0, radius + height, 0));
-        this.collider = new Capsule(start, end, radius);
-        this.bindHoldSocket();
+        this.collider = collider;
     }
     startAction(name, durationSec) {
         this.actionName = name;
@@ -81,12 +69,9 @@ export class Player {
     }
     pickup(item) {
         this.held = item;
-        // parent item to socket
         this.holdSocket.add(item.object);
-        // reset local transform so it snaps nicely
         item.object.position.set(0, 0, 0);
         item.object.rotation.set(0, 0, 0);
-        // optional: scale for held look
         item.object.scale.setScalar(1);
     }
     // Place item onto an anchor (like a station surface)
@@ -102,49 +87,80 @@ export class Player {
         item.object.rotation.set(0, yaw, 0);
         return item;
     }
-    face8Dir(ix, iz, dt) {
+    changeDirection(ix, iz, dt) {
         if (ix === 0 && iz === 0)
             return;
-        let yaw = Math.atan2(ix, iz) + this.modelYawOffset;
+        let yaw = Math.atan2(ix, iz);
         const step = Math.PI / 4;
         yaw = Math.round(yaw / step) * step;
         const cur = this.object.rotation.y;
-        // shortest signed angle difference in [-PI, PI]
         const delta = Math.atan2(Math.sin(yaw - cur), Math.cos(yaw - cur));
         const t = Math.min(1, this.turnSpeed * dt);
         this.object.rotation.y = cur + delta * t;
     }
-    throwHeld(scene, throwSpeed = 8, upSpeed = 3) {
+    throwHeld(scene) {
         if (!this.held)
             return null;
         const item = this.held;
         this.held = null;
-        // detach from socket -> world
-        item.object.removeFromParent();
-        scene.add(item.object);
-        // spawn in front of player
-        const p = this.getWorldPos(new THREE.Vector3());
+        scene.attach(item.object);
         const yaw = this.object.rotation.y;
         const forward = new THREE.Vector3(Math.sin(yaw), 0, Math.cos(yaw)).normalize();
-        item.object.position.copy(p).add(new THREE.Vector3(0, 1.2, 0)).addScaledVector(forward, 0.8);
+        const origin = new THREE.Vector3();
+        this.object.getWorldPosition(origin);
+        item.object.position.copy(origin);
+        // item.object.position.y += 1.2; // optional (recommended)
         item.object.rotation.set(0, yaw, 0);
-        // initial velocity
-        const vel = forward.multiplyScalar(throwSpeed);
-        vel.y = upSpeed;
-        return { item, vel };
+        item.vel.copy(forward).multiplyScalar(this.throwSpeed);
+        item.vel.y = this.upSpeed;
+        item.moving = true;
+        return item;
     }
-    update(dt) {
+    tryPickupThrown(thrown) {
+        if (this.getHeldItem())
+            return false;
+        const p = this.getWorldPos(new THREE.Vector3());
+        let bestI = -1;
+        let bestD = Infinity;
+        for (let i = 0; i < thrown.length; i++) {
+            const t = thrown[i];
+            const ip = t.object.getWorldPosition(new THREE.Vector3());
+            const d = ip.distanceTo(p);
+            const r = t.pickupRadius;
+            if (d <= r && d < bestD) {
+                bestD = d;
+                bestI = i;
+            }
+        }
+        if (bestI === -1)
+            return false;
+        const picked = thrown.splice(bestI, 1)[0];
+        picked.object.removeFromParent();
+        this.pickup(picked);
+        return true;
+    }
+    update(dt, three, thrown) {
         const ix = (this.controller.getButtonState("KeyD") ? 1 : 0) + (this.controller.getButtonState("KeyA") ? -1 : 0);
         const iz = (this.controller.getButtonState("KeyS") ? 1 : 0) + (this.controller.getButtonState("KeyW") ? -1 : 0);
         const moving = ix !== 0 || iz !== 0;
-        // tick action timer (does NOT return early)
+        const throwDown = this.controller.getButtonState("KeyQ");
+        if (throwDown && !this.wasThrowDown) {
+            const res = this.throwHeld(three.scene);
+            if (res)
+                thrown.push(res);
+        }
+        this.wasThrowDown = throwDown;
+        const fDown = this.controller.getButtonState("KeyF");
+        if (fDown) {
+            this.tryPickupThrown(thrown);
+        }
+        this.wasEDown = fDown;
         if (this.actionName) {
             this.actionTimeLeft -= dt;
             if (this.actionTimeLeft <= 0)
                 this.actionName = null;
         }
         if (this.movementDisabled) {
-            // keep idle anim if not in a forced action
             if (!this.actionName) {
                 if (this.held)
                     this.animator.set("Idle_Holding");
@@ -153,7 +169,7 @@ export class Player {
             }
             return;
         }
-        this.face8Dir(ix, iz, dt);
+        this.changeDirection(ix, iz, dt);
         const move = new THREE.Vector3(ix, 0, iz);
         if (move.lengthSq() > 0)
             move.normalize().multiplyScalar(this.moveSpeed * dt);

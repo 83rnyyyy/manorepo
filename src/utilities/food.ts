@@ -1,9 +1,9 @@
 import * as THREE from "three";
 import { ThreeRenderer } from "../core/render.js";
-import { HoldableItem } from "./holdableItem.js";
+import { HoldableItem, ItemType } from "./holdableItem.js";
 
 export abstract class Food extends HoldableItem{
-    public readonly type = 'ingredient' as const;
+    public readonly type: ItemType = 'ingredient' as const;
     public isChoppable: boolean;
     public isCookable: boolean;
 

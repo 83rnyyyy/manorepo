@@ -6,25 +6,25 @@ import { ThreeRenderer } from "../../core/render.js";
 
 export abstract class Station {
 	public readonly anchor: THREE.Object3D;
-
-	private interactKey = "KeyE";
-	public holdSeconds = 1.0;
-	public rotation = 0;
+	protected promptText: string = '';
+	private interactKey: string = "KeyE";
+	public holdSeconds: number = 1.0;
+	public rotation: number = 0;
 	
-	public halfX = 0.7;
-	public halfY = 1.0;
-	public halfZ = 0.7;
+	public halfX: number = 0.7;
+	private halfY: number = 1.0;
+	public halfZ: number = 0.7;
 	
 
-	private box = new THREE.Box3();
-	private progress = 0;
-	private active = false;
+	private box: THREE.Box3 = new THREE.Box3();
+	private progress: number = 0;
+	private active: boolean = false;
 
 	constructor(anchor: THREE.Object3D) {
 		this.anchor = anchor;
 	}
 
-	private updateBox() {
+	private updateBox(): void {
 		const c = new THREE.Vector3();
 		this.anchor.getWorldPosition(c);
 
@@ -42,28 +42,20 @@ export abstract class Station {
 		return this.box;
 	}
 
-	public getProgress01(): number {
+	public getProgress(): number {
 		return THREE.MathUtils.clamp(this.progress / this.holdSeconds, 0, 1);
 	}
 
-	public cancel(three:ThreeRenderer, player:Player) {
+	public cancel(three:ThreeRenderer, player:Player): void {
 		if (this.active) this.onCancel(three,player);
 		this.active = false;
 		this.progress = 0;
 	}
 
-	public tick(
-		dt: number,
-		controller: Controller,
-		playerWorldPos: THREE.Vector3,
-		
-		player: Player,
-		three:ThreeRenderer,
-		
-	) {
+	public tick(dt: number, playerWorldPos: THREE.Vector3, player: Player, three:ThreeRenderer): void {
 		
 		const inside = this.containsPoint(playerWorldPos);
-		const holding = controller.getButtonState(this.interactKey);
+		const holding = player.controller.getButtonState(this.interactKey);
 	
 		if (!inside || !holding) {
 			this.cancel(three,player);
@@ -88,7 +80,7 @@ export abstract class Station {
 	public abstract prompt(player?:Player): string;
 
 	
-	protected onCancel(three:ThreeRenderer, player:Player):void {}
-	protected useAnimation(three:ThreeRenderer, player:Player):void {}
+	protected onCancel(three:ThreeRenderer, player:Player):void{};
+	protected useAnimation(three:ThreeRenderer, player:Player):void {};
 	protected abstract onComplete(player:Player, three:ThreeRenderer): void;
 }

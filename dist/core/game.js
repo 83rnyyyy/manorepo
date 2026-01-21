@@ -18,6 +18,7 @@ import { Counter } from "../objects/stations/counter.js";
 import { PotItem } from "../objects/recipes/pot.js";
 import AssetManager from "../utilities/assetManager.js";
 import { Serving } from "../objects/stations/serving.js";
+import { Capsule } from "three/examples/jsm/Addons.js";
 export class Game {
     three;
     controller;
@@ -26,16 +27,11 @@ export class Game {
     progressUI = new ProgressBar();
     clock = new THREE.Clock();
     thrown = [];
-    wasThrowDown = false;
-    wasEDown = false;
     bounds = { minX: 0, maxX: 0, minZ: 0, maxZ: 0 };
     levels = 0;
     boundsRect;
-    boundsBox;
-    animator;
     world = new Octree();
     mapObj;
-    // ===== station debug drawing =====
     stations = [];
     stationHelpers = [];
     constructor() {
@@ -46,19 +42,15 @@ export class Game {
         this.three = new ThreeRenderer(canvas);
         this.stationManager = new StationManager(this.three);
         this.controller = new Controller();
-        const playerObj = await this.three.spawnPlayer("/public/Panda.glb", new THREE.Vector3(0, 0, 0));
-        await this.three.addPlayerVariant("knife", "/public/Panda_Knife.glb");
-        await this.three.addPlayerVariant("cooking", "/public/Panda_Pan.glb");
-        this.animator = new PlayerAnimator(this.three.playerActions);
         this.mapObj = await this.three.loadGLB("/public/test7.glb");
         this.createStations();
         this.createStationDebugHelpers();
         this.world.clear();
         this.world.fromGraphNode(this.mapObj);
         this.bounds = this.computeBoundsFromMap(this.mapObj, 1.0);
+        this.player = await this.createPlayer();
         this.boundsRect = this.createBoundsRectangle(this.bounds, 0.05);
         this.three.scene.add(this.boundsRect);
-        this.player = new Player(playerObj, this.controller, this.bounds, this.world, this.animator);
         this.clock.start();
         const plates = this.stationManager.getByType(Plates);
         for (let i = 0; i < 3; i++) {
@@ -71,62 +63,42 @@ export class Game {
         stove.heldItem = pot;
         this.draw();
     }
-    tryPickupThrown() {
-        if (this.player.getHeldItem())
-            return false;
-        const p = this.player.getWorldPos(new THREE.Vector3());
-        let bestI = -1;
-        let bestD = Infinity;
-        for (let i = 0; i < this.thrown.length; i++) {
-            const t = this.thrown[i];
-            const ip = t.item.object.getWorldPosition(new THREE.Vector3());
-            const d = ip.distanceTo(p);
-            // use item pickupRadius if you want; otherwise tune this
-            const r = t.item.pickupRadius ?? 0.9;
-            if (d <= r && d < bestD) {
-                bestD = d;
-                bestI = i;
-            }
-        }
-        if (bestI === -1)
-            return false;
-        const picked = this.thrown.splice(bestI, 1)[0];
-        picked.item.object.removeFromParent(); // safe
-        this.player.pickup(picked.item);
-        return true;
+    async createPlayer() {
+        const playerObj = await this.three.spawnPlayer("/public/Panda.glb", new THREE.Vector3(0, 0, 0));
+        this.three.addPlayerVariant("knife", "/public/Panda_Knife.glb");
+        this.three.addPlayerVariant("cooking", "/public/Panda_Pan.glb");
+        let animator = new PlayerAnimator(this.three.playerActions);
+        let controller = new Controller;
+        controller.addButton("KeyE");
+        controller.addButton("KeyW");
+        controller.addButton("KeyA");
+        controller.addButton("KeyS");
+        controller.addButton("KeyD");
+        controller.addButton("KeyQ");
+        controller.addButton("KeyF");
+        const p = playerObj.position.clone();
+        const radius = 0.35;
+        const height = 1.3;
+        const start = p.clone().add(new THREE.Vector3(0, radius, 0));
+        const end = p.clone().add(new THREE.Vector3(0, radius + height, 0));
+        let collider = new Capsule(start, end, radius);
+        let player = new Player(playerObj, controller, this.bounds, this.world, animator, collider);
+        player.bindHoldSocket();
+        return player;
     }
     update(dt) {
-        const throwDown = this.player.controller.getButtonState("KeyQ");
-        if (throwDown && !this.wasThrowDown) {
-            const res = this.player.throwHeld(this.three.scene, 9, 3.5);
-            if (res)
-                this.thrown.push({ item: res.item, vel: res.vel, radius: 0.22, sleeping: false });
-        }
-        this.wasThrowDown = throwDown;
-        // NEW: simulate thrown items
         this.updateThrownItems(dt);
-        this.player.update(dt);
+        this.player.update(dt, this.three, this.thrown);
         this.three.playerMixer.update(dt);
-        // stations
-        this.stationManager.update(dt, this.controller, this.player, this.three);
+        this.stationManager.update(dt, this.player, this.three);
         this.updateStationDebugHelpers();
-        const focused = this.stationManager.getFocused();
+        const focused = this.stationManager.focused;
         const stationText = focused ? focused.prompt(this.player) : "";
-        // PICKUP (KeyE press) only if no station is actively prompting
-        const eDown = this.controller.getButtonState("KeyE");
-        if (eDown && !this.wasEDown) {
-            const stationHasPrompt = !!(stationText && stationText.trim().length > 0);
-            if (!stationHasPrompt) {
-                this.tryPickupThrown();
-            }
-        }
-        this.wasEDown = eDown;
-        // UI (keep your existing logic)
         if (focused) {
             const text = stationText;
             if (text && text.trim().length > 0) {
                 this.progressUI.show(text);
-                this.progressUI.setProgress(focused.getProgress01());
+                this.progressUI.setProgress(focused.getProgress());
             }
             else {
                 this.progressUI.hide();
@@ -142,21 +114,20 @@ export class Game {
         this.three.render();
         requestAnimationFrame(this.draw);
     };
-    // inside core/game.ts (Game class)
     createStations() {
-        const sinkAnchor = this.makeAnchor(this.mapObj, "sinkAnchor", new THREE.Vector3(16.66, 0.29, -11.81));
-        const boardAnchor = this.makeAnchor(this.mapObj, "boardAnchor", new THREE.Vector3(11, 1, -4.59));
-        const stoveAnchor = this.makeAnchor(this.mapObj, "stoveAnchor", new THREE.Vector3(18.71, 0.50, -11.44));
-        const fridgeAnchor = this.makeAnchor(this.mapObj, "fridgeAnchor", new THREE.Vector3(20.99, 0.12, -11.50));
-        const trashAnchor = this.makeAnchor(this.mapObj, "trashAnchor", new THREE.Vector3(7.87, 0.46, -8.90));
-        const platesAnchor = this.makeAnchor(this.mapObj, "platesAnchor", new THREE.Vector3(15.09, 0.23, -11.86));
-        const counterAnchor1 = this.makeAnchor(this.mapObj, "counterAnchor1", new THREE.Vector3(13.24, 0.61, -2.70));
-        const counterAnchor2 = this.makeAnchor(this.mapObj, "counterAnchor2", new THREE.Vector3(15.21, 0.61, -2.72));
-        const counterAnchor3 = this.makeAnchor(this.mapObj, "counterAnchor3", new THREE.Vector3(13.24, 0.61, -2.70));
-        const counterAnchor4 = this.makeAnchor(this.mapObj, "counterAnchor4", new THREE.Vector3(17.02, 0.61, -2.69));
-        const counterAnchor5 = this.makeAnchor(this.mapObj, "counterAnchor5", new THREE.Vector3(20.23, 0.61, -3.27));
-        const counterAnchor6 = this.makeAnchor(this.mapObj, "counterAnchor6", new THREE.Vector3(14.03, 0.61, -11.89));
-        const servingAnchor = this.makeAnchor(this.mapObj, "servingAnchor", new THREE.Vector3(16, 0.47, 0.77));
+        const sinkAnchor = this.makeAnchor(this.mapObj, new THREE.Vector3(16.66, 0.29, -11.81));
+        const boardAnchor = this.makeAnchor(this.mapObj, new THREE.Vector3(11, 0.5, -4.59));
+        const stoveAnchor = this.makeAnchor(this.mapObj, new THREE.Vector3(18.71, 0.50, -11.44));
+        const fridgeAnchor = this.makeAnchor(this.mapObj, new THREE.Vector3(20.99, 0.12, -11.50));
+        const trashAnchor = this.makeAnchor(this.mapObj, new THREE.Vector3(7.87, 0.46, -8.90));
+        const platesAnchor = this.makeAnchor(this.mapObj, new THREE.Vector3(15.09, 0.23, -11.86));
+        const counterAnchor1 = this.makeAnchor(this.mapObj, new THREE.Vector3(13.24, 0.61, -2.70));
+        const counterAnchor2 = this.makeAnchor(this.mapObj, new THREE.Vector3(15.21, 0.61, -2.72));
+        const counterAnchor3 = this.makeAnchor(this.mapObj, new THREE.Vector3(13.24, 0.61, -2.70));
+        const counterAnchor4 = this.makeAnchor(this.mapObj, new THREE.Vector3(17.02, 0.61, -2.69));
+        const counterAnchor5 = this.makeAnchor(this.mapObj, new THREE.Vector3(20.23, 0.61, -3.27));
+        const counterAnchor6 = this.makeAnchor(this.mapObj, new THREE.Vector3(14.03, 0.61, -11.89));
+        const servingAnchor = this.makeAnchor(this.mapObj, new THREE.Vector3(16, 0.47, 0.77));
         const sink = new Sink(sinkAnchor);
         sink.halfX = 0.6;
         sink.halfZ = 0.6;
@@ -164,8 +135,8 @@ export class Game {
         sink.rotation = 0;
         this.stationManager.add(sink);
         const board = new CuttingBoard(boardAnchor);
-        board.halfX = 1.25;
-        board.halfZ = 1;
+        board.halfX = 4;
+        board.halfZ = 1.5;
         board.holdSeconds = 1.0;
         board.rotation = 0;
         this.stationManager.add(board);
@@ -249,7 +220,7 @@ export class Game {
             this.stationHelpers[i].updateMatrixWorld(true);
         }
     }
-    makeAnchor(mapRoot, name, localPos) {
+    makeAnchor(mapRoot, localPos) {
         const a = new THREE.Object3D();
         a.position.copy(localPos);
         mapRoot.add(a);
@@ -276,43 +247,48 @@ export class Game {
         return new THREE.Line(geom, new THREE.LineBasicMaterial());
     }
     updateThrownItems(dt) {
-        const GRAVITY = -20;
-        const EPS = 1e-3;
-        const GROUND_NORMAL_Y = 0.55; // bigger = stricter "ground" check
-        // substep to avoid missing the ground on big dt
-        const MAX_STEP = 1 / 120;
-        const steps = Math.max(1, Math.ceil(dt / MAX_STEP));
-        const h = dt / steps;
+        const GRAVITY = -10;
+        const SKIN = 1e-3;
+        // make this less strict so slightly slanted floor triangles still count as "ground"
+        const GROUND_NORMAL_Y = 0.55;
         for (let i = this.thrown.length - 1; i >= 0; i--) {
             const t = this.thrown[i];
-            if (t.item.object.position.y < -50) {
+            if (!t.moving)
+                continue;
+            // despawn if it fell far below
+            if (t.object.position.y < -50) {
+                t.deleteObject();
                 this.thrown.splice(i, 1);
                 continue;
             }
-            if (t.sleeping)
-                continue;
-            for (let s = 0; s < steps && !t.sleeping; s++) {
-                // integrate
+            // dynamic substeps to avoid tunneling
+            const speed = t.vel.length();
+            const maxMove = Math.max(0.03, t.radius * 0.5);
+            const steps = Math.max(1, Math.ceil((speed * dt) / maxMove));
+            const h = dt / steps;
+            for (let s = 0; s < steps && t.moving; s++) {
+                // integrate velocity + position
                 t.vel.y += GRAVITY * h;
-                t.item.object.position.addScaledVector(t.vel, h);
-                // collide
-                const sphere = new THREE.Sphere(t.item.object.position, t.radius);
-                const hit = this.world.sphereIntersect(sphere);
-                if (hit) {
-                    // push out so it's not stuck inside geometry
-                    t.item.object.position.addScaledVector(hit.normal, hit.depth + EPS);
-                    // if it's "ground", instantly stop forever
-                    if (hit.normal.y >= GROUND_NORMAL_Y) {
+                t.object.position.addScaledVector(t.vel, h);
+                // resolve multiple times (corners/seams)
+                const MAX_ITERS = 8;
+                for (let it = 0; it < MAX_ITERS; it++) {
+                    const sphere = new THREE.Sphere(t.object.position, t.radius);
+                    const hit = this.world.sphereIntersect(sphere);
+                    if (!hit)
+                        break;
+                    // push out of geometry
+                    t.object.position.addScaledVector(hit.normal, hit.depth + SKIN);
+                    // stop immediately on ground (only when falling)
+                    if (hit.normal.y >= GROUND_NORMAL_Y && t.vel.y <= 0) {
                         t.vel.set(0, 0, 0);
-                        t.sleeping = true;
+                        t.moving = false;
                         break;
                     }
-                    else {
-                        // otherwise just stop moving into the surface (prevents phasing)
-                        const vn = t.vel.dot(hit.normal);
-                        if (vn < 0)
-                            t.vel.addScaledVector(hit.normal, -vn);
-                    }
+                    // slide on walls: remove velocity into the wall normal
+                    const vn = t.vel.dot(hit.normal);
+                    if (vn < 0)
+                        t.vel.addScaledVector(hit.normal, -vn);
                 }
             }
         }

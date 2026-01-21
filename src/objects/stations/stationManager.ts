@@ -7,25 +7,20 @@ import { Player } from "../player.js";
 
 export class StationManager {
 	private stations: Station[] = [];
-	private focused: Station | null = null;
+	private _focused: Station | null = null;
 	
 	constructor(private three:ThreeRenderer){
 		this.three = three;
 	}
-	public add(station: Station) {
+	public add(station: Station): void {
 		this.stations.push(station);
 	}
 
-	public update(dt: number, controller: Controller, player: Player, three:ThreeRenderer) {
-		const playerObj = player.object;
-
-		const p = new THREE.Vector3();
-		playerObj.getWorldPosition(p);
-
-		// pick closest station that contains player
+	public update(dt: number, player: Player, three:ThreeRenderer): void {
+		const p = player.getWorldPos(new THREE.Vector3());
 		let best: Station | null = null;
 		let bestDist = Infinity;
-
+		
 		for (const s of this.stations) {
 			if (!s.containsPoint(p)) continue;
 
@@ -39,16 +34,15 @@ export class StationManager {
 		}
 
 		if (this.focused && this.focused !== best) this.focused.cancel(three,player);
-		this.focused = best;
-
+		this._focused = best;
 		if (this.focused) {
-		
-			this.focused.tick(dt, controller, p, player, this.three);
+			this.focused.tick(dt, p, player, this.three);
 		}
+		console.log(this._focused);
 	}
 
-	public getFocused(): Station | null {
-		return this.focused;
+	public get focused(): Station | null {
+		return this._focused;
 	}
 
 

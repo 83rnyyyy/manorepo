@@ -10,16 +10,12 @@ export class ThreeRenderer {
     camera;
     renderer;
     controls;
-    player = null;
-    // ===== your existing fields =====
+    player;
     playerMixer;
     playerClips = [];
     playerActions = {};
-    // ===============================
-    // ===== NEW: variants =====
     variants = {};
     activeVariant = "default";
-    // ========================
     constructor(canvas) {
         this.canvas = canvas;
         this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
@@ -62,7 +58,7 @@ export class ThreeRenderer {
         obj.visible = false;
         parent.add(obj);
         const mixer = new THREE.AnimationMixer(obj);
-        const clips = gltf.animations ?? [];
+        const clips = gltf.animations;
         const actions = {};
         for (const clip of clips)
             actions[clip.name] = mixer.clipAction(clip);
@@ -70,8 +66,6 @@ export class ThreeRenderer {
     }
     applyVariant(name) {
         const next = this.variants[name];
-        if (!next)
-            throw new Error(`Variant "${name}" not loaded`);
         // hide current, show next
         const cur = this.variants[this.activeVariant];
         if (cur)
@@ -85,28 +79,21 @@ export class ThreeRenderer {
         Object.assign(this.playerActions, next.actions);
     }
     async spawnPlayer(url, pos) {
-        // create root once
         const root = new THREE.Object3D();
         root.position.copy(pos);
         this.scene.add(root);
         this.player = root;
-        // load default variant into root
         this.variants = {};
         this.activeVariant = "default";
         this.variants["default"] = await this.loadVariant(url, root);
-        // show default + expose mixer/actions like before
         this.applyVariant("default");
         return root;
     }
-    // ===== NEW: load additional player model variants into the same root =====
     async addPlayerVariant(name, url) {
-        if (!this.player)
-            throw new Error("Call spawnPlayer(...) before addPlayerVariant(...)");
         if (this.variants[name])
-            return; // already loaded
+            return;
         this.variants[name] = await this.loadVariant(url, this.player);
     }
-    // ===== NEW: switch between already-loaded variants =====
     switchPlayerVariant(name) {
         if (!this.variants[name])
             throw new Error(`Variant "${name}" not loaded`);
@@ -123,7 +110,7 @@ export class ThreeRenderer {
                 const box = new THREE.Box3().setFromObject(model);
                 const center = box.getCenter(new THREE.Vector3());
                 model.position.sub(center);
-                model.position.y += 2;
+                model.position.y += 2.5;
                 this.controls.target.set(0, 0, 0);
                 this.controls.update();
                 resolve(model);

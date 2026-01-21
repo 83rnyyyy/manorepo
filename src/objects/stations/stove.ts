@@ -11,7 +11,7 @@ import { Food } from "../../utilities/food.js";
 export class Stove extends Station {
     public hasItem = true;
     public heldItem: HoldableItem | null;
-    public cookwareLoc:number[] = [2.7,1.6,-8.69];
+    public cookwareLoc:number[] = [2.7,2.1,-8.69];
   
   
   	public prompt(player:Player): string {
@@ -25,7 +25,7 @@ export class Stove extends Station {
   
   
   public override tick(dt: number,
-    controller: Controller,
+   
     playerWorldPos: THREE.Vector3,
     
     player: Player,
@@ -35,7 +35,7 @@ export class Stove extends Station {
         	if(player.getHeldItem() && player.getHeldItem()!.name != "Rice") return;
           }
         }
-        super.tick(dt, controller, playerWorldPos, player, three);
+        super.tick(dt,  playerWorldPos, player, three);
     }
 	protected onComplete(player:Player): void {
 		
@@ -75,6 +75,9 @@ export class Stove extends Station {
 			this.heldItem = player.placeOn(this.anchor, new THREE.Vector3(0, 1.65, -1.1), this.rotation);
 			this.hasItem = true;
 		}
-    // TODO: cook item in pan/pot
+    
   	}
+	protected override onCancel(three: ThreeRenderer, player: Player): void {
+		
+	}
 }

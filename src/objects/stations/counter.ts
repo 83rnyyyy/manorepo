@@ -6,21 +6,21 @@ import { HoldableItem } from "../../utilities/holdableItem.js";
 import { Player } from "../player.js";
 import { PlateItem } from "../recipes/plate.js";
 import { Food } from "../../utilities/food.js";
-import { Controller } from "../../core/controller.js";
+
 import { ThreeRenderer } from "../../core/render.js";
 
 export class Counter extends Station {
-  	public hasItem = false;
-  	public heldItem: Food | HoldableItem | null;
+  	
+  	public heldItem: HoldableItem| null;
   	public isPlate: boolean = false;
-    private promptText: string = '';
+   
   	public prompt(): string {
       return this.promptText;
     
     }
 
-  public override tick(dt: number, controller: Controller, playerWorldPos: THREE.Vector3, player: Player, three: ThreeRenderer): void {
-    if(!this.hasItem){
+  public override tick(dt: number,  playerWorldPos: THREE.Vector3, player: Player, three: ThreeRenderer): void {
+    if(!this.heldItem){
       if(player.getHeldItem()){
         this.promptText = "Hold E to Place on Counter";
       }
@@ -31,13 +31,13 @@ export class Counter extends Station {
     }  
     else if(player.getHeldItem()) this.promptText =  "Add Ingredient to Plate"; 
     else this.promptText =  `Hold E To Pickup ${this.heldItem?.type} From Counter`;
-    super.tick(dt,controller,playerWorldPos, player, three);
+    super.tick(dt,playerWorldPos, player, three);
   }
 
 
   protected onComplete(player: Player): void {
     
-    if(this.hasItem){
+    if(this.heldItem){
 		if(this.heldItem instanceof PlateItem && player.getHeldItem()){
 			const ingredient = player.removeHeldItem() as HoldableItem;
 			(this.heldItem).addIngredient(ingredient);
@@ -45,7 +45,7 @@ export class Counter extends Station {
 		else{
 			player.pickup(this.heldItem!);
 			this.heldItem = null;
-			this.hasItem = false;	
+			
 		}
 		
     }
@@ -53,7 +53,7 @@ export class Counter extends Station {
 		if(!player.getHeldItem()) return;
       this.heldItem = player.placeOn(this.anchor, new THREE.Vector3(0.8, 1.35, 0), this.rotation);
       this.heldItem?.type
-      this.hasItem = true;
+      
     }
     
     // TODO: convert ingredient -> chopped ingredient

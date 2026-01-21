@@ -1,4 +1,6 @@
-// ui/ProgressUI.ts
+/**
+ * Shows and changes the text and progress that is shown during the progress bar of interaction with stations.
+ */
 export class ProgressBar {
     root;
     bar;
@@ -34,7 +36,6 @@ export class ProgressBar {
         document.body.appendChild(this.root);
     }
     show(text) {
-        console.log("asdasdasd");
         this.root.style.display = "block";
         this.label.textContent = text;
     }

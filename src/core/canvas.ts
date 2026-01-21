@@ -2,7 +2,7 @@
 export default class Canvas {
   public static canvas: HTMLCanvasElement;
 
-  public static setup() {
+  public static setup(): void {
     let c = document.querySelector("canvas") as HTMLCanvasElement | null;
     if (!c) {
       c = document.createElement("canvas");

@@ -6,10 +6,11 @@ export default class AssetManager {
     static library = {};
     static onProgress;
     static onError;
-    static init() {
-        AssetManager.manager.onProgress = (url, loaded, total) => AssetManager.onProgress?.(url, loaded, total);
-        AssetManager.manager.onError = (url) => AssetManager.onError?.(url);
-    }
+    // public static init() {
+    //   AssetManager.manager.onProgress = (url, loaded, total) =>
+    //   AssetManager.onProgress?.(url, loaded, total);
+    //   AssetManager.manager.onError = (url) => AssetManager.onError?.(url);
+    // }
     static async addAllAssets() {
         await Promise.all([
             this.addPrefab("Plate", "/public/Environment/glTF/Environment_Plate.gltf"),

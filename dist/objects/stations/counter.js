@@ -3,15 +3,13 @@ import * as THREE from "three";
 import { Station } from "./station.js";
 import { PlateItem } from "../recipes/plate.js";
 export class Counter extends Station {
-    hasItem = false;
     heldItem;
     isPlate = false;
-    promptText = '';
     prompt() {
         return this.promptText;
     }
-    tick(dt, controller, playerWorldPos, player, three) {
-        if (!this.hasItem) {
+    tick(dt, playerWorldPos, player, three) {
+        if (!this.heldItem) {
             if (player.getHeldItem()) {
                 this.promptText = "Hold E to Place on Counter";
             }
@@ -24,10 +22,10 @@ export class Counter extends Station {
             this.promptText = "Add Ingredient to Plate";
         else
             this.promptText = `Hold E To Pickup ${this.heldItem?.type} From Counter`;
-        super.tick(dt, controller, playerWorldPos, player, three);
+        super.tick(dt, playerWorldPos, player, three);
     }
     onComplete(player) {
-        if (this.hasItem) {
+        if (this.heldItem) {
             if (this.heldItem instanceof PlateItem && player.getHeldItem()) {
                 const ingredient = player.removeHeldItem();
                 (this.heldItem).addIngredient(ingredient);
@@ -35,7 +33,6 @@ export class Counter extends Station {
             else {
                 player.pickup(this.heldItem);
                 this.heldItem = null;
-                this.hasItem = false;
             }
         }
         else {
@@ -43,7 +40,6 @@ export class Counter extends Station {
                 return;
             this.heldItem = player.placeOn(this.anchor, new THREE.Vector3(0.8, 1.35, 0), this.rotation);
             this.heldItem?.type;
-            this.hasItem = true;
         }
         // TODO: convert ingredient -> chopped ingredient
     }

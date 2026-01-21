@@ -3,9 +3,11 @@ import * as THREE from "three";
 import { Station } from "./station.js";
 import RecipeManager from "../recipes/recipeManager.js";
 export class CuttingBoard extends Station {
-    heldItem;
+    heldItem = null;
     prompt(player) {
+        console.log(this.heldItem);
         if (this.heldItem) {
+            console.log(this.heldItem);
             if (this.heldItem.isChoppable)
                 return `Hold E To Chop ${this.heldItem?.name}`;
             else
