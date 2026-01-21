@@ -6,7 +6,7 @@ import AssetManager from "../../utilities/assetManager.js";
 import { Food } from "../../utilities/food.js";
 
 export class PotItem extends Cookware {
-    public readonly name = "pot" as const;
+    public readonly name = "Pot" as const;
 
     private emptyModel: THREE.Object3D = AssetManager.create("Empty Pot");
     private filledCookedModel: THREE.Object3D = AssetManager.create("Cooked Filled Pot");
@@ -26,12 +26,12 @@ export class PotItem extends Cookware {
         const root = new THREE.Group();
         root.name = "PotRoot";
 
-        super(renderer, root, x, y, z);
+        super(renderer, x, y, z, root);
         // attach both to the root, toggle visibility
         this.object.add(this.emptyModel);
         this.object.add(this.filledUncookedModel);
         this.object.add(this.filledCookedModel);
-
+        this.object = root;
         this.setFilled(this.empty);
     }
 
