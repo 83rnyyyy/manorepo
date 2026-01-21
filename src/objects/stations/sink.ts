@@ -1,28 +1,50 @@
 // objects/stations/sink.ts
 import * as THREE from "three";
-import { Station} from "./station.js";
-
-import { ThreeRenderer } from "../../core/render.js";
+import { Station } from "./station.js";
 import { Player } from "../player.js";
+import { PlateItem } from "../recipes/plate.js";
+import { HoldableItem } from "../../utilities/holdableItem.js";
+import { Plates } from "./plates.js";
 
 export class Sink extends Station {
-  public prompt(): string {
-    return "Hold E to wash";
-  }
+	// put your real positions here (same style as Plates)
+	public plateLocations: number[][] = [
+		[0.65, 1.6, -9.1],
+		[0.65, 1.7, -9.1],
+		[0.65, 1.8, -9.1]
+	];
 
-  
-  protected override useAnimation(three:ThreeRenderer): void {
-    
-  }
+	public currentItems: PlateItem[] = [];
+	private plateStation: Plates;
 
-  protected onComplete(): void {
-    
-    
-  }
+	constructor(anchor: any, plateStation: Plates) {
+		super(anchor);
+		this.plateStation = plateStation;
 
-  protected override onCancel(three: ThreeRenderer, player: Player): void {
-    
-  }
+	}
+	public prompt(player?: Player): string {
 
-  
+		if (!player?.getHeldItem() && this.currentItems.length > 0) return "Hold E to Wash Plate";
+	
+		else return "";
+
+	}
+
+	private washPlate(){
+		const plate = this.currentItems.pop();
+		this.plateStation.addPlate(plate!)
+	}
+
+	protected onComplete(player: Player): void {
+		if (!player?.getHeldItem() && this.currentItems.length > 0) {
+			this.washPlate();
+		}
+	}
+
+	public addPlate(plate: PlateItem): void {
+		if (this.currentItems.length > 3) return;
+		
+		plate.object.position.set(this.plateLocations[this.currentItems.length]![0]!, this.plateLocations[this.currentItems.length]![1]!, this.plateLocations[this.currentItems.length]![2]!);
+		this.currentItems.push(plate);
+	}
 }
