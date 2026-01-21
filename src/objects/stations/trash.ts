@@ -1,10 +1,11 @@
-
+// objects/stations/trash.ts (optional but common)
+import * as THREE from "three";
 import { Station} from "./station.js";
-
 
 import { Player } from "../player.js";
 import { PlateItem } from "../recipes/plate.js";
 import { PotItem } from "../recipes/pot.js";
+
 
 export class Trash extends Station {
   public prompt(): string {
@@ -12,7 +13,6 @@ export class Trash extends Station {
   }
 
   protected onComplete( player: Player): void {
-    
     if(player.getHeldItem()){
       const heldItem = player.getHeldItem();
       if(heldItem instanceof PlateItem){
@@ -27,9 +27,8 @@ export class Trash extends Station {
         
       }
     }
-    
+    // TODO: delete item in player's hands
   }
 
-  
   
 }
